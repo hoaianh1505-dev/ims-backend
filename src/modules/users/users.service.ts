@@ -1,7 +1,7 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import { PasswordUtil } from '../../common/utils/password.util';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
@@ -22,8 +22,7 @@ export class UsersService {
       throw new ConflictException('Username already exists');
     }
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
+    const hashedPassword = await PasswordUtil.hash(createUserDto.password);
 
     const newUser = this.userRepository.create({
       ...createUserDto,
@@ -80,6 +79,10 @@ export class UsersService {
     };
   }
 
+  async findByUsername(username: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { username } });
+  }
+
   async findOne(id: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
@@ -92,8 +95,7 @@ export class UsersService {
     const user = await this.findOne(id);
 
     if (updateUserDto.password) {
-      const salt = await bcrypt.genSalt();
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
+      updateUserDto.password = await PasswordUtil.hash(updateUserDto.password);
     }
 
     const updatedUser = this.userRepository.merge(user, updateUserDto);

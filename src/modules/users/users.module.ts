@@ -8,6 +8,6 @@ import { UserEntity } from './entities/user.entity';
   imports: [TypeOrmModule.forFeature([UserEntity])],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService], // Cho phép module khác (như Auth) xài chung UsersService
+  exports: [UsersService],
 })
-export class UsersModule {}
+export class UsersModule { }

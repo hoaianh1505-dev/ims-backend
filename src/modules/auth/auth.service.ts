@@ -1,5 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
 import { PasswordUtil } from '../../common/utils/password.util';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,7 +18,7 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { username, password } = loginDto;
 
-    // Find user by username (including password field)
+    // Find user by username
     const user = await this.usersService.findByUsername(username);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -80,3 +83,25 @@ export class AuthService {
   }
 }
 
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(
+    configService: ConfigService,
+    private readonly usersService: UsersService,
+  ) {
+    const secret = configService.getOrThrow<string>('jwt.secret');
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: secret,
+    });
+  }
+
+  async validate(payload: { sub: string; username: string }) {
+    const user = await this.usersService.findOne(payload.sub);
+    if (!user || !user.is_active) {
+      throw new UnauthorizedException('User is inactive or not found');
+    }
+    return { id: user.id, username: user.username, role: user.role };
+  }
+}

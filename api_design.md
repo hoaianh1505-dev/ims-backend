@@ -372,10 +372,3 @@ User hỏi "còn bao nhiêu Coca 330ml ở kho Q1?"
 
 ---
 
-## 18. Việc cần bổ sung vào Schema (DBML/SQL) trước khi code phần này
-
-- Cột `users.must_change_password` (boolean, default `true`) — bắt user đổi mật khẩu ở lần đăng nhập đầu hoặc sau khi Admin reset
-- (Tuỳ chọn) Bảng `chat_conversations` + `chat_messages` — chỉ cần nếu muốn lưu lịch sử chat AI Assistant, bỏ qua nếu làm stateless
-
-~~Bảng `permissions`, `role_permissions`~~ — không cần, dùng role cứng.
-~~Bảng `auth_tokens`, Nodemailer~~ — không cần, Admin reset mật khẩu trực tiếp thay vì gửi email.

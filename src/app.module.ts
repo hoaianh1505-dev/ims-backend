@@ -15,6 +15,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UnitsModule } from './modules/units/units.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -40,6 +41,7 @@ import { AppController } from './app.controller';
     AuthModule,
     CategoriesModule,
     UnitsModule,
+    SuppliersModule,
   ],
   controllers: [AppController],
   providers: [

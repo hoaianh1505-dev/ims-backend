@@ -16,6 +16,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UnitsModule } from './modules/units/units.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { ProductsModule } from './modules/products/products.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -34,7 +36,7 @@ import { AppController } from './app.controller';
       database: process.env.DB_DATABASE || process.env.DB_NAME,
       entities: [],
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     ThrottlerModule.forRoot(throttlerConfig),
     UsersModule,
@@ -42,6 +44,8 @@ import { AppController } from './app.controller';
     CategoriesModule,
     UnitsModule,
     SuppliersModule,
+    ProductsModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,7 +7,6 @@ export class RequestContextMiddleware implements NestMiddleware {
   private readonly logger = new Logger('HTTP');
 
   use(req: Request, res: Response, next: NextFunction): void {
-    // 1. Gắn hoặc kế thừa Request-ID
     const requestId = (req.headers['x-request-id'] as string) || randomUUID();
     req.headers['x-request-id'] = requestId;
     res.setHeader('x-request-id', requestId);
@@ -16,7 +15,6 @@ export class RequestContextMiddleware implements NestMiddleware {
     const userAgent = req.get('user-agent') || '';
     const startTime = Date.now();
 
-    // 2. Log khi response hoàn thành
     res.on('finish', () => {
       const { statusCode } = res;
       const duration = Date.now() - startTime;

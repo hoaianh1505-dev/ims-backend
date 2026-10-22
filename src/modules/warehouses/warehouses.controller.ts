@@ -34,7 +34,6 @@ import { UserRole } from '../users/entities/user.entity';
 export class WarehousesController {
   constructor(private readonly warehousesService: WarehousesService) {}
 
-  // 1. GET /warehouses (A, M, S)
   @Get('warehouses')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({ summary: 'Lấy danh sách kho hàng (phân trang, tìm kiếm)' })
@@ -43,7 +42,6 @@ export class WarehousesController {
     return this.warehousesService.findAll(query);
   }
 
-  // 2. GET /warehouses/:id (A, M, S)
   @Get('warehouses/:id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({ summary: 'Xem chi tiết kho hàng (kèm danh sách vị trí & manager)' })
@@ -53,7 +51,6 @@ export class WarehousesController {
     return this.warehousesService.findOne(id);
   }
 
-  // 3. POST /warehouses (A)
   @Post('warehouses')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Tạo kho hàng mới (Chỉ Admin)' })
@@ -63,7 +60,6 @@ export class WarehousesController {
     return this.warehousesService.create(createWarehouseDto);
   }
 
-  // 4. PATCH /warehouses/:id (A)
   @Patch('warehouses/:id')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Cập nhật kho hàng / đổi quản lý kho (Chỉ Admin)' })
@@ -77,7 +73,6 @@ export class WarehousesController {
     return this.warehousesService.update(id, updateWarehouseDto);
   }
 
-  // 5. DELETE /warehouses/:id (A)
   @Delete('warehouses/:id')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Xóa kho hàng (Chỉ Admin)' })
@@ -87,7 +82,6 @@ export class WarehousesController {
     return this.warehousesService.remove(id);
   }
 
-  // 6. GET /warehouses/:id/locations (A, M, S)
   @Get('warehouses/:id/locations')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({ summary: 'Lấy danh sách vị trí trong kho' })
@@ -97,7 +91,6 @@ export class WarehousesController {
     return this.warehousesService.findLocationsByWarehouse(id);
   }
 
-  // 7. POST /warehouses/:id/locations (A, M)
   @Post('warehouses/:id/locations')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Tạo vị trí mới trong kho (Admin, Manager)' })
@@ -111,7 +104,6 @@ export class WarehousesController {
     return this.warehousesService.createLocation(id, createLocationDto);
   }
 
-  // 8. PATCH /locations/:id (A, M)
   @Patch('locations/:id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Cập nhật thông tin vị trí (Admin, Manager)' })
@@ -124,7 +116,6 @@ export class WarehousesController {
     return this.warehousesService.updateLocation(id, updateLocationDto);
   }
 
-  // 9. DELETE /locations/:id (A, M)
   @Delete('locations/:id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Xóa vị trí trong kho (Admin, Manager)' })

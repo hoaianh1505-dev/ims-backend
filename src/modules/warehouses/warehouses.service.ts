@@ -28,7 +28,6 @@ export class WarehousesService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  // 1. Tạo kho mới (Admin)
   async create(createWarehouseDto: CreateWarehouseDto): Promise<WarehouseEntity> {
     const code = createWarehouseDto.code.trim().toUpperCase();
 
@@ -59,7 +58,6 @@ export class WarehousesService {
     return await this.warehouseRepository.save(warehouse);
   }
 
-  // 2. Danh sách kho có phân trang & tìm kiếm
   async findAll(query: FilterWarehouseDto) {
     const page = query.page || 1;
     const limit = query.limit || 20;
@@ -117,7 +115,6 @@ export class WarehousesService {
     };
   }
 
-  // 3. Chi tiết kho
   async findOne(id: string): Promise<WarehouseEntity> {
     const warehouse = await this.warehouseRepository.findOne({
       where: { id },
@@ -151,7 +148,6 @@ export class WarehousesService {
     return warehouse;
   }
 
-  // 4. Cập nhật kho (kể cả đổi manager) (Admin)
   async update(id: string, updateWarehouseDto: UpdateWarehouseDto): Promise<WarehouseEntity> {
     const warehouse = await this.findOne(id);
 
@@ -193,14 +189,12 @@ export class WarehousesService {
     return await this.warehouseRepository.save(warehouse);
   }
 
-  // 5. Xóa kho (Admin)
   async remove(id: string): Promise<{ message: string }> {
     const warehouse = await this.findOne(id);
     await this.warehouseRepository.remove(warehouse);
     return { message: `Đã xóa kho "${warehouse.name}" thành công` };
   }
 
-  // 6. Danh sách vị trí trong kho
   async findLocationsByWarehouse(warehouseId: string): Promise<WarehouseLocationEntity[]> {
     await this.findOne(warehouseId);
 
@@ -210,7 +204,6 @@ export class WarehousesService {
     });
   }
 
-  // 7. Tạo vị trí trong kho (Admin, Manager)
   async createLocation(
     warehouseId: string,
     createLocationDto: CreateLocationDto,
@@ -239,7 +232,6 @@ export class WarehousesService {
     return await this.locationRepository.save(location);
   }
 
-  // 8. Cập nhật vị trí (Admin, Manager)
   async updateLocation(
     id: string,
     updateLocationDto: UpdateLocationDto,
@@ -277,7 +269,6 @@ export class WarehousesService {
     return await this.locationRepository.save(location);
   }
 
-  // 9. Xóa vị trí (Admin, Manager)
   async removeLocation(id: string): Promise<{ message: string }> {
     const location = await this.locationRepository.findOne({
       where: { id },

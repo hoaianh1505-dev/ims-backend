@@ -36,18 +36,24 @@ export class UsersService {
     const { page = 1, limit = 10, role, is_active, search } = query;
     const skip = (page - 1) * limit;
 
-    const whereClause: any = {};
-
+    const baseFilter: any = {};
     if (role) {
-      whereClause.role = role;
+      baseFilter.role = role;
     }
-
     if (is_active !== undefined) {
-      whereClause.is_active = is_active;
+      baseFilter.is_active = is_active;
     }
 
-    if (search) {
-      whereClause.username = ILike(`%${search}%`);
+    let whereClause: any = baseFilter;
+
+    if (search?.trim()) {
+      const keyword = `%${search.trim()}%`;
+      whereClause = [
+        { ...baseFilter, username: ILike(keyword) },
+        { ...baseFilter, display_name: ILike(keyword) },
+        { ...baseFilter, email: ILike(keyword) },
+        { ...baseFilter, phone: ILike(keyword) },
+      ];
     }
 
     const [users, total] = await this.userRepository.findAndCount({

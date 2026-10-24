@@ -8,7 +8,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_DATABASE || process.env.DB_NAME || 'ims_db',
-  synchronize: false, // Bắt buộc false khi dùng migration CLI
+  synchronize: false,
   logging: true,
   entities: ['src/**/*.entity{.ts,.js}'],
   migrations: ['src/migrations/*{.ts,.js}'],

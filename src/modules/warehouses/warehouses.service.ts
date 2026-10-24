@@ -107,11 +107,13 @@ export class WarehousesService {
     });
 
     return {
-      items,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit) || 1,
+      data: items,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
     };
   }
 

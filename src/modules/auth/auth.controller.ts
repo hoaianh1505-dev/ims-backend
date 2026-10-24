@@ -1,9 +1,11 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Auth')
@@ -17,6 +19,24 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Cấp lại access token từ refresh token (tự đọc từ Cookie hoặc Body)' })
+  @ApiResponse({ status: 200, description: 'Cấp access token mới thành công' })
+  @ApiResponse({ status: 401, description: 'Refresh token không hợp lệ hoặc đã hết hạn' })
+  refreshToken(@Req() req: Request, @Body() dto: RefreshTokenDto) {
+    const token = dto.refresh_token || req.cookies?.refresh_token;
+    return this.authService.refreshToken(token);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Đăng xuất khỏi hệ thống' })
+  @ApiResponse({ status: 200, description: 'Đăng xuất thành công' })
+  logout() {
+    return this.authService.logout();
   }
 
   @Post('change-password')

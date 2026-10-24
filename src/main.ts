@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { setupSwagger } from './config/swagger.setup';
 
@@ -12,20 +13,17 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') || 3000;
 
-  // 1. Bảo mật HTTP Headers
   app.use(helmet());
+  app.use(cookieParser());
 
-  // 2. Bật CORS
   app.enableCors({
     origin: process.env.CLIENT_URL || '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  // 3. Nén dữ liệu trả về
   app.use(compression());
 
-  // 4. Validate toàn bộ dữ liệu đầu vào
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -34,7 +32,6 @@ async function bootstrap() {
     }),
   );
 
-  // 5. Khởi tạo Swagger
   setupSwagger(app);
 
   await app.listen(port);

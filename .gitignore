@@ -53,3 +53,6 @@ Thumbs.db
 
 # Database & SQL Design
 *.sql
+
+# Postman
+postman_collection.json

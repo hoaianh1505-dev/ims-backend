@@ -1,18 +1,18 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { PasswordUtil } from '../../common/utils/password.util';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { PasswordUtil } from '../../common/utils/password.util';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) { }
 
   async login(loginDto: LoginDto) {
@@ -35,15 +35,19 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Generate JWT token
     const accessToken = this.generateToken({
       sub: user.id,
       username: user.username,
       role: user.role,
     });
 
+    const refreshToken = this.generateRefreshToken({
+      sub: user.id,
+    });
+
     return {
       access_token: accessToken,
+      refresh_token: refreshToken,
       user: {
         id: user.id,
         username: user.username,
@@ -56,6 +60,50 @@ export class AuthService {
 
   generateToken(payload: { sub: string; username: string; role: string }): string {
     return this.jwtService.sign(payload);
+  }
+
+  generateRefreshToken(payload: { sub: string }): string {
+    const refreshSecret = this.configService.getOrThrow<string>('jwt.refreshSecret');
+    const expiresIn = this.configService.getOrThrow<string>('jwt.refreshExpiresIn');
+    return this.jwtService.sign(payload, {
+      secret: refreshSecret,
+      expiresIn: expiresIn as any,
+    });
+  }
+
+  async refreshToken(token?: string) {
+    if (!token) {
+      throw new UnauthorizedException('Không tìm thấy refresh token');
+    }
+
+    const refreshSecret = this.configService.getOrThrow<string>('jwt.refreshSecret');
+
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: refreshSecret,
+      });
+
+      const user = await this.usersService.findOne(payload.sub);
+      if (!user || !user.is_active) {
+        throw new UnauthorizedException('User is inactive or not found');
+      }
+
+      const newAccessToken = this.generateToken({
+        sub: user.id,
+        username: user.username,
+        role: user.role,
+      });
+
+      return {
+        access_token: newAccessToken,
+      };
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+  }
+
+  async logout() {
+    return { message: 'Đăng xuất thành công' };
   }
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
@@ -83,25 +131,3 @@ export class AuthService {
   }
 }
 
-@Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    configService: ConfigService,
-    private readonly usersService: UsersService,
-  ) {
-    const secret = configService.getOrThrow<string>('jwt.secret');
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: secret,
-    });
-  }
-
-  async validate(payload: { sub: string; username: string }) {
-    const user = await this.usersService.findOne(payload.sub);
-    if (!user || !user.is_active) {
-      throw new UnauthorizedException('User is inactive or not found');
-    }
-    return { id: user.id, username: user.username, role: user.role };
-  }
-}

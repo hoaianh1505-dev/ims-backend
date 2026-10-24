@@ -1,44 +1,36 @@
 import { IsOptional, IsString, IsInt, Min, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterProductDto {
-  @ApiPropertyOptional({ description: 'Page number', default: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'Trang phải là số nguyên' })
+  @Min(1, { message: 'Trang tối thiểu là 1' })
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Items per page', default: 20 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'Số lượng mỗi trang phải là số nguyên' })
+  @Min(1, { message: 'Số lượng mỗi trang tối thiểu là 1' })
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Search keyword (name, SKU, barcode)' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Từ khóa tìm kiếm phải là chuỗi' })
   search?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by category UUID' })
   @IsOptional()
-  @IsUUID('4')
+  @IsUUID('4', { message: 'category_id phải là định dạng UUID hợp lệ' })
   category_id?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by supplier UUID' })
   @IsOptional()
-  @IsUUID('4')
+  @IsUUID('4', { message: 'supplier_id phải là định dạng UUID hợp lệ' })
   supplier_id?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by unit UUID' })
   @IsOptional()
-  @IsUUID('4')
+  @IsUUID('4', { message: 'unit_id phải là định dạng UUID hợp lệ' })
   unit_id?: string;
 
-  @ApiPropertyOptional({ description: 'Sort by field:order (e.g. created_at:desc, selling_price:asc)' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Trường sắp xếp phải là chuỗi' })
   sort?: string;
 }

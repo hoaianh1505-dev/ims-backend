@@ -1,35 +1,33 @@
 import { IsOptional, IsString, IsInt, Min, IsBoolean, IsUUID } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterCategoryDto {
-  @ApiPropertyOptional({ description: 'Page number', default: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'Trang phải là số nguyên' })
+  @Min(1, { message: 'Trang tối thiểu là 1' })
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Items per page', default: 20 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'Số lượng mỗi trang phải là số nguyên' })
+  @Min(1, { message: 'Số lượng mỗi trang tối thiểu là 1' })
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Search by category name' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Từ khóa tìm kiếm phải là chuỗi' })
   search?: string;
 
-  @ApiPropertyOptional({ description: 'Return categories as a hierarchical tree', default: false })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
-  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return undefined;
+  })
+  @IsBoolean({ message: 'tree phải là boolean' })
   tree?: boolean = false;
 
-  @ApiPropertyOptional({ description: 'Filter direct children by parent UUID' })
   @IsOptional()
-  @IsUUID('4')
+  @IsUUID('4', { message: 'parent_id phải là định dạng UUID hợp lệ' })
   parent_id?: string;
 }

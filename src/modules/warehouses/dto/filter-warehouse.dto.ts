@@ -1,34 +1,29 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsBoolean, IsInt, Min } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class FilterWarehouseDto {
-  @ApiPropertyOptional({ example: 1, default: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'Trang phải là số nguyên' })
+  @Min(1, { message: 'Trang tối thiểu là 1' })
   page?: number = 1;
 
-  @ApiPropertyOptional({ example: 20, default: 20 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'Số lượng mỗi trang phải là số nguyên' })
+  @Min(1, { message: 'Số lượng mỗi trang tối thiểu là 1' })
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Tìm theo tên kho hoặc mã kho' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Từ khóa tìm kiếm phải là chuỗi' })
   search?: string;
 
-  @ApiPropertyOptional({ description: 'Lọc theo trạng thái hoạt động' })
   @IsOptional()
   @Transform(({ value }) => {
     if (value === 'true' || value === true) return true;
     if (value === 'false' || value === false) return false;
     return undefined;
   })
-  @IsBoolean()
+  @IsBoolean({ message: 'Trạng thái hoạt động phải là boolean' })
   is_active?: boolean;
 }

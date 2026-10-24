@@ -1,15 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class ChangePasswordDto {
-  @ApiProperty({ description: 'Current password' })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'Mật khẩu hiện tại không được để trống' })
+  @IsString({ message: 'Mật khẩu hiện tại phải là chuỗi' })
   current_password: string;
 
-  @ApiProperty({ description: 'New password', minLength: 6 })
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(6)
+  @IsNotEmpty({ message: 'Mật khẩu mới không được để trống' })
+  @IsString({ message: 'Mật khẩu mới phải là chuỗi' })
+  @MinLength(6, { message: 'Mật khẩu mới phải có ít nhất 6 ký tự' })
   new_password: string;
 }

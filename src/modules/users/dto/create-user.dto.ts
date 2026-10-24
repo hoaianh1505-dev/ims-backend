@@ -10,24 +10,24 @@ import {
 import { UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
-  @IsString()
+  @IsString({ message: 'Username phải là chuỗi' })
   @IsNotEmpty({ message: 'Username không được để trống' })
-  @MaxLength(50)
+  @MaxLength(50, { message: 'Username tối đa 50 ký tự' })
   username: string;
 
-  @IsString()
+  @IsString({ message: 'Mật khẩu phải là chuỗi' })
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
   @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
   password: string;
 
-  @IsString()
+  @IsString({ message: 'Tên hiển thị phải là chuỗi' })
   @IsOptional()
-  @MaxLength(100)
+  @MaxLength(100, { message: 'Tên hiển thị tối đa 100 ký tự' })
   display_name?: string;
 
-  @IsString()
+  @IsString({ message: 'Số điện thoại phải là chuỗi' })
   @IsOptional()
-  @MaxLength(20)
+  @MaxLength(20, { message: 'Số điện thoại tối đa 20 ký tự' })
   phone?: string;
 
   @IsEmail({}, { message: 'Email không đúng định dạng' })

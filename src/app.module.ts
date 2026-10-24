@@ -6,9 +6,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { RequestContextMiddleware } from './common/middlewares/request-context.middleware';
 import { AppService } from './app.service';
 import appConfig from './config/app.config';
-import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
-import { throttlerConfig } from './config/throttler.config';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -18,15 +16,16 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { UnitsModule } from './modules/units/units.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { ProductsModule } from './modules/products/products.module';
-import { UploadModule } from './modules/upload/upload.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 import { AppController } from './app.controller';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig],
+      load: [appConfig, jwtConfig],
       envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
@@ -40,7 +39,12 @@ import { AppController } from './app.controller';
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV !== 'production',
     }),
-    ThrottlerModule.forRoot(throttlerConfig),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     UsersModule,
     AuthModule,
     CategoriesModule,
@@ -49,6 +53,7 @@ import { AppController } from './app.controller';
     ProductsModule,
     UploadModule,
     WarehousesModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [

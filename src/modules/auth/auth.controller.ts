@@ -22,9 +22,9 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @ApiOperation({ summary: 'Cấp lại access token từ refresh token (tự đọc từ Cookie hoặc Body)' })
-  @ApiResponse({ status: 200, description: 'Cấp access token mới thành công' })
-  @ApiResponse({ status: 401, description: 'Refresh token không hợp lệ hoặc đã hết hạn' })
+  @ApiOperation({ summary: 'Refresh access token (reads from HTTP-only cookie or request body)' })
+  @ApiResponse({ status: 200, description: 'New access token issued successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
   refreshToken(@Req() req: Request, @Body() dto: RefreshTokenDto) {
     const token = dto.refresh_token || req.cookies?.refresh_token;
     return this.authService.refreshToken(token);
@@ -33,15 +33,15 @@ export class AuthController {
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Đăng xuất khỏi hệ thống' })
-  @ApiResponse({ status: 200, description: 'Đăng xuất thành công' })
+  @ApiOperation({ summary: 'Logout and clear refresh token cookie' })
+  @ApiResponse({ status: 200, description: 'Logged out successfully' })
   logout() {
     return this.authService.logout();
   }
 
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Change current user password' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 401, description: 'Current password is incorrect' })
@@ -54,7 +54,7 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

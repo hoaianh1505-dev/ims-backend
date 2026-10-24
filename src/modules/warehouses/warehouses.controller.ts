@@ -36,36 +36,36 @@ export class WarehousesController {
 
   @Get('warehouses')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
-  @ApiOperation({ summary: 'Lấy danh sách kho hàng (phân trang, tìm kiếm)' })
-  @ApiResponse({ status: 200, description: 'Lấy danh sách thành công' })
+  @ApiOperation({ summary: 'Get list of warehouses with pagination and search' })
+  @ApiResponse({ status: 200, description: 'Warehouses retrieved successfully' })
   findAllWarehouses(@Query() query: FilterWarehouseDto) {
     return this.warehousesService.findAll(query);
   }
 
   @Get('warehouses/:id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
-  @ApiOperation({ summary: 'Xem chi tiết kho hàng (kèm danh sách vị trí & manager)' })
-  @ApiResponse({ status: 200, description: 'Chi tiết kho hàng' })
-  @ApiResponse({ status: 404, description: 'Kho không tồn tại' })
+  @ApiOperation({ summary: 'Get warehouse details by ID (including locations and manager)' })
+  @ApiResponse({ status: 200, description: 'Warehouse details retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Warehouse not found' })
   findOneWarehouse(@Param('id', ParseUUIDPipe) id: string) {
     return this.warehousesService.findOne(id);
   }
 
   @Post('warehouses')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Tạo kho hàng mới (Chỉ Admin)' })
-  @ApiResponse({ status: 201, description: 'Tạo kho thành công' })
-  @ApiResponse({ status: 409, description: 'Mã kho đã tồn tại' })
+  @ApiOperation({ summary: 'Create a new warehouse (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Warehouse created successfully' })
+  @ApiResponse({ status: 409, description: 'Warehouse code already exists' })
   createWarehouse(@Body() createWarehouseDto: CreateWarehouseDto) {
     return this.warehousesService.create(createWarehouseDto);
   }
 
   @Patch('warehouses/:id')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Cập nhật kho hàng / đổi quản lý kho (Chỉ Admin)' })
-  @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
-  @ApiResponse({ status: 404, description: 'Kho không tồn tại' })
-  @ApiResponse({ status: 409, description: 'Mã kho đã được sử dụng' })
+  @ApiOperation({ summary: 'Update warehouse details or assign manager (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Warehouse updated successfully' })
+  @ApiResponse({ status: 404, description: 'Warehouse not found' })
+  @ApiResponse({ status: 409, description: 'Warehouse code already in use' })
   updateWarehouse(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateWarehouseDto: UpdateWarehouseDto,
@@ -75,28 +75,28 @@ export class WarehousesController {
 
   @Delete('warehouses/:id')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Xóa kho hàng (Chỉ Admin)' })
-  @ApiResponse({ status: 200, description: 'Xóa thành công' })
-  @ApiResponse({ status: 404, description: 'Kho không tồn tại' })
+  @ApiOperation({ summary: 'Delete warehouse (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Warehouse deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Warehouse not found' })
   removeWarehouse(@Param('id', ParseUUIDPipe) id: string) {
     return this.warehousesService.remove(id);
   }
 
   @Get('warehouses/:id/locations')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
-  @ApiOperation({ summary: 'Lấy danh sách vị trí trong kho' })
-  @ApiResponse({ status: 200, description: 'Danh sách vị trí' })
-  @ApiResponse({ status: 404, description: 'Kho không tồn tại' })
+  @ApiOperation({ summary: 'Get list of locations within a warehouse' })
+  @ApiResponse({ status: 200, description: 'Warehouse locations retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Warehouse not found' })
   findLocations(@Param('id', ParseUUIDPipe) id: string) {
     return this.warehousesService.findLocationsByWarehouse(id);
   }
 
   @Post('warehouses/:id/locations')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Tạo vị trí mới trong kho (Admin, Manager)' })
-  @ApiResponse({ status: 201, description: 'Tạo vị trí thành công' })
-  @ApiResponse({ status: 404, description: 'Kho không tồn tại' })
-  @ApiResponse({ status: 409, description: 'Mã vị trí đã tồn tại trong kho' })
+  @ApiOperation({ summary: 'Create a new location in warehouse (Admin, Manager)' })
+  @ApiResponse({ status: 201, description: 'Location created successfully' })
+  @ApiResponse({ status: 404, description: 'Warehouse not found' })
+  @ApiResponse({ status: 409, description: 'Location code already exists in this warehouse' })
   createLocation(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createLocationDto: CreateLocationDto,
@@ -106,9 +106,9 @@ export class WarehousesController {
 
   @Patch('locations/:id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Cập nhật thông tin vị trí (Admin, Manager)' })
-  @ApiResponse({ status: 200, description: 'Cập nhật vị trí thành công' })
-  @ApiResponse({ status: 404, description: 'Vị trí không tồn tại' })
+  @ApiOperation({ summary: 'Update location details (Admin, Manager)' })
+  @ApiResponse({ status: 200, description: 'Location updated successfully' })
+  @ApiResponse({ status: 404, description: 'Location not found' })
   updateLocation(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateLocationDto: UpdateLocationDto,
@@ -118,9 +118,9 @@ export class WarehousesController {
 
   @Delete('locations/:id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Xóa vị trí trong kho (Admin, Manager)' })
-  @ApiResponse({ status: 200, description: 'Xóa vị trí thành công' })
-  @ApiResponse({ status: 404, description: 'Vị trí không tồn tại' })
+  @ApiOperation({ summary: 'Delete location from warehouse (Admin, Manager)' })
+  @ApiResponse({ status: 200, description: 'Location deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Location not found' })
   removeLocation(@Param('id', ParseUUIDPipe) id: string) {
     return this.warehousesService.removeLocation(id);
   }

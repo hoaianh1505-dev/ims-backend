@@ -6,46 +6,38 @@ import {
   IsEmail,
   IsBoolean,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSupplierDto {
-  @ApiProperty({ description: 'Supplier name', example: 'Công ty TNHH Vinamilk' })
-  @IsString()
+  @IsString({ message: 'Tên nhà cung cấp phải là chuỗi' })
   @IsNotEmpty({ message: 'Tên nhà cung cấp không được để trống' })
   @MaxLength(150, { message: 'Tên nhà cung cấp tối đa 150 ký tự' })
   name: string;
 
-  @ApiPropertyOptional({ description: 'Supplier code', example: 'SUP-VNM' })
-  @IsString()
+  @IsString({ message: 'Mã nhà cung cấp phải là chuỗi' })
   @IsOptional()
   @MaxLength(50, { message: 'Mã nhà cung cấp tối đa 50 ký tự' })
   code?: string;
 
-  @ApiPropertyOptional({ description: 'Contact person name', example: 'Nguyễn Văn A' })
-  @IsString()
+  @IsString({ message: 'Tên người liên hệ phải là chuỗi' })
   @IsOptional()
   @MaxLength(100, { message: 'Tên người liên hệ tối đa 100 ký tự' })
   contact_name?: string;
 
-  @ApiPropertyOptional({ description: 'Email address', example: 'contact@vinamilk.com.vn' })
   @IsEmail({}, { message: 'Email không đúng định dạng' })
   @IsOptional()
-  @MaxLength(100)
+  @MaxLength(100, { message: 'Email tối đa 100 ký tự' })
   email?: string;
 
-  @ApiPropertyOptional({ description: 'Phone number', example: '0901234567' })
-  @IsString()
+  @IsString({ message: 'Số điện thoại phải là chuỗi' })
   @IsOptional()
   @MaxLength(20, { message: 'Số điện thoại tối đa 20 ký tự' })
   phone?: string;
 
-  @ApiPropertyOptional({ description: 'Address', example: 'Số 10 Tân Trào, Quận 7, TP.HCM' })
-  @IsString()
+  @IsString({ message: 'Địa chỉ phải là chuỗi' })
   @IsOptional()
   address?: string;
 
-  @ApiPropertyOptional({ description: 'Active status', default: true })
-  @IsBoolean()
+  @IsBoolean({ message: 'Trạng thái hoạt động phải là boolean' })
   @IsOptional()
   is_active?: boolean;
 }

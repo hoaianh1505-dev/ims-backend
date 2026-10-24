@@ -4,10 +4,10 @@ import { IsOptional, IsBoolean } from 'class-validator';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
-  @IsBoolean()
+  @IsBoolean({ message: 'Trạng thái hoạt động phải là boolean' })
   is_active?: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @IsBoolean({ message: 'must_change_password phải là boolean' })
   must_change_password?: boolean;
 }

@@ -25,7 +25,6 @@ export class TransformInterceptor<T>
 
     return next.handle().pipe(
       map((result) => {
-        // Tự động set Cookie refresh_token nếu có
         if (result && typeof result === 'object' && 'refresh_token' in result) {
           response.cookie('refresh_token', result.refresh_token, {
             httpOnly: true,

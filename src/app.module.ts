@@ -19,6 +19,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { StockTransactionsModule } from './modules/stock-transactions/stock-transactions.module';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { AppController } from './app.controller';
 import { UploadModule } from './modules/upload/upload.module';
 
@@ -56,6 +57,7 @@ import { UploadModule } from './modules/upload/upload.module';
     WarehousesModule,
     InventoryModule,
     StockTransactionsModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [

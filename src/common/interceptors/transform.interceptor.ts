@@ -25,6 +25,10 @@ export class TransformInterceptor<T>
 
     return next.handle().pipe(
       map((result) => {
+        if (response.headersSent) {
+          return result;
+        }
+
         if (result && typeof result === 'object' && 'refresh_token' in result) {
           response.cookie('refresh_token', result.refresh_token, {
             httpOnly: true,

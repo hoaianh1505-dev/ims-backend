@@ -22,6 +22,7 @@ import { StockTransactionsModule } from './modules/stock-transactions/stock-tran
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { ExcelModule } from './modules/excel/excel.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AssistantModule } from './modules/assistant/assistant.module';
 import { AppController } from './app.controller';
 import { UploadModule } from './modules/upload/upload.module';
 
@@ -62,6 +63,7 @@ import { UploadModule } from './modules/upload/upload.module';
     AuditLogsModule,
     ExcelModule,
     DashboardModule,
+    AssistantModule,
   ],
   controllers: [AppController],
   providers: [

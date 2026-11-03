@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, FindOptionsWhere } from 'typeorm';
@@ -18,6 +19,14 @@ export class CategoriesService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<CategoryEntity> {
+    const trimmedName = createCategoryDto.name.trim();
+    const existing = await this.categoryRepository.findOne({
+      where: { name: ILike(trimmedName) },
+    });
+    if (existing) {
+      throw new ConflictException(`Danh mục với tên "${trimmedName}" đã tồn tại trong hệ thống`);
+    }
+
     if (createCategoryDto.parent_id) {
       const parent = await this.categoryRepository.findOne({
         where: { id: createCategoryDto.parent_id },
@@ -27,7 +36,10 @@ export class CategoriesService {
       }
     }
 
-    const category = this.categoryRepository.create(createCategoryDto);
+    const category = this.categoryRepository.create({
+      ...createCategoryDto,
+      name: trimmedName,
+    });
     return await this.categoryRepository.save(category);
   }
 
@@ -87,6 +99,19 @@ export class CategoriesService {
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<CategoryEntity> {
     const category = await this.findOne(id);
+
+    if (updateCategoryDto.name) {
+      const trimmedName = updateCategoryDto.name.trim();
+      const existing = await this.categoryRepository.findOne({
+        where: { name: ILike(trimmedName) },
+      });
+      if (existing && existing.id !== id) {
+        throw new ConflictException(
+          `Danh mục với tên "${trimmedName}" đã tồn tại trong hệ thống`,
+        );
+      }
+      updateCategoryDto.name = trimmedName;
+    }
 
     if (updateCategoryDto.parent_id !== undefined) {
       if (updateCategoryDto.parent_id === id) {

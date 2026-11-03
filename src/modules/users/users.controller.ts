@@ -15,6 +15,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -42,6 +43,14 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
+  @Get('roles')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Lấy danh sách các vai trò người dùng (Roles list)' })
+  @ApiResponse({ status: 200, description: 'Danh sách các vai trò trong hệ thống' })
+  getRoles() {
+    return this.usersService.getRoles();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -55,6 +64,17 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Patch(':id/reset-password')
+  @ApiOperation({ summary: 'Admin đặt lại mật khẩu cho người dùng (Reset password)' })
+  @ApiResponse({ status: 200, description: 'Đặt lại mật khẩu thành công' })
+  @ApiResponse({ status: 404, description: 'Người dùng không tồn tại' })
+  resetPassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto?: ResetPasswordDto,
+  ) {
+    return this.usersService.resetPassword(id, dto);
   }
 
   @Delete(':id')

@@ -26,14 +26,14 @@ export class UploadService {
 
   async uploadFile(
     file: Express.Multer.File,
-    folder = 'products',
+    folder = 'general',
   ): Promise<{ url: string; key: string }> {
     if (!file) {
       throw new BadRequestException('Vui lòng chọn file để upload');
     }
 
     const cleanFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const key = `${folder}/${Date.now()}-${cleanFileName}`;
+    const key = `ims/${folder}/${Date.now()}-${cleanFileName}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucket,

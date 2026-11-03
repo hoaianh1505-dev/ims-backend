@@ -1,6 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { RequestContextMiddleware } from './common/middlewares/request-context.middleware';
@@ -33,16 +33,19 @@ import { UploadModule } from './modules/upload/upload.module';
       load: [appConfig, jwtConfig],
       envFilePath: '.env',
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USERNAME || process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE || process.env.DB_NAME,
-      entities: [],
-      autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production',
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get('DB_HOST', 'localhost'),
+        port: parseInt(config.get('DB_PORT', '5432'), 10),
+        username: config.get('DB_USERNAME') || config.get('DB_USER', 'postgres'),
+        password: config.get('DB_PASSWORD'),
+        database: config.get('DB_DATABASE') || config.get('DB_NAME', 'ims_db'),
+        entities: [],
+        autoLoadEntities: true,
+        synchronize: config.get('NODE_ENV') !== 'production',
+      }),
     }),
     ThrottlerModule.forRoot([
       {

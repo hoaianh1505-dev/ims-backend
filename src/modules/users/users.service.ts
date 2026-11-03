@@ -2,10 +2,11 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { PasswordUtil } from '../../common/utils/password.util';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity, UserRole } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -111,5 +112,43 @@ export class UsersService {
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
     await this.userRepository.softRemove(user);
+  }
+
+  getRoles() {
+    return [
+      {
+        role: UserRole.ADMIN,
+        name: 'Quản trị viên (Admin)',
+        description: 'Toàn quyền quản trị hệ thống, quản lý người dùng và cấu hình',
+      },
+      {
+        role: UserRole.MANAGER,
+        name: 'Quản lý kho (Manager)',
+        description: 'Quản lý kho hàng, duyệt phiếu xuất nhập, theo dõi báo cáo và kiểm kê',
+      },
+      {
+        role: UserRole.STAFF,
+        name: 'Nhân viên kho (Staff)',
+        description: 'Thực hiện thao tác nhập kho, xuất kho và kiểm đếm thực tế',
+      },
+    ];
+  }
+
+  async resetPassword(id: string, dto?: ResetPasswordDto) {
+    const user = await this.findOne(id);
+
+    const tempPassword = dto?.new_password || `IMS@${Math.random().toString(36).slice(-6)}!`;
+    const hashedPassword = await PasswordUtil.hash(tempPassword);
+
+    user.password = hashedPassword;
+    user.must_change_password = true;
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Đặt lại mật khẩu thành công',
+      user_id: user.id,
+      username: user.username,
+      temp_password: tempPassword,
+    };
   }
 }

@@ -11,6 +11,7 @@ import { ProductImageEntity } from './entities/product-image.entity';
 import { CategoryEntity } from '../categories/entities/category.entity';
 import { UnitEntity } from '../units/entities/unit.entity';
 import { SupplierEntity } from '../suppliers/entities/supplier.entity';
+import { InventoryEntity } from '../inventory/entities/inventory.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilterProductDto } from './dto/filter-product.dto';
@@ -113,6 +114,26 @@ export class ProductsService {
       take: limit,
     });
 
+    if (products.length > 0) {
+      const productIds = products.map((p) => p.id);
+      const stockRows = await this.productRepository.manager
+        .createQueryBuilder(InventoryEntity, 'inv')
+        .select('inv.product_id', 'product_id')
+        .addSelect('COALESCE(SUM(inv.quantity), 0)', 'total_stock')
+        .where('inv.product_id IN (:...productIds)', { productIds })
+        .groupBy('inv.product_id')
+        .getRawMany();
+
+      const stockMap = new Map<string, number>();
+      for (const row of stockRows) {
+        stockMap.set(row.product_id, parseInt(row.total_stock, 10) || 0);
+      }
+
+      products.forEach((p) => {
+        (p as any).current_stock = stockMap.get(p.id) || 0;
+      });
+    }
+
     return {
       data: products,
       meta: {
@@ -138,6 +159,13 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Sản phẩm với ID ${id} không tồn tại`);
     }
+
+    const stockRow = await this.productRepository.manager
+      .createQueryBuilder(InventoryEntity, 'inv')
+      .select('COALESCE(SUM(inv.quantity), 0)', 'total_stock')
+      .where('inv.product_id = :id', { id })
+      .getRawOne();
+    (product as any).current_stock = parseInt(stockRow?.total_stock, 10) || 0;
 
     return product;
   }

@@ -16,7 +16,7 @@ export class CategoriesService {
   constructor(
     @InjectRepository(CategoryEntity)
     private readonly categoryRepository: Repository<CategoryEntity>,
-  ) {}
+  ) { }
 
   async create(createCategoryDto: CreateCategoryDto): Promise<CategoryEntity> {
     const trimmedName = createCategoryDto.name.trim();

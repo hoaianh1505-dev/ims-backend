@@ -10,4 +10,4 @@ import { UnitEntity } from './entities/unit.entity';
   providers: [UnitsService],
   exports: [UnitsService, TypeOrmModule],
 })
-export class UnitsModule {}
+export class UnitsModule { }

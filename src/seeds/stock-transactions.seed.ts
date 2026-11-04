@@ -209,3 +209,4 @@ export async function seedStockTransactions(
 if (require.main === module) {
   runStandaloneSeed(seedStockTransactions, 'StockTransactionsSeed');
 }
+

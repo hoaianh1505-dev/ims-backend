@@ -47,3 +47,4 @@ export async function runAllSeeds(dataSource: DataSource, logger: Logger): Promi
 if (require.main === module) {
   runStandaloneSeed(runAllSeeds, 'IMS-AllSeedsRunner');
 }
+

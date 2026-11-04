@@ -105,3 +105,4 @@ export async function seedSuppliers(
 if (require.main === module) {
   runStandaloneSeed(seedSuppliers, 'SuppliersSeed');
 }
+

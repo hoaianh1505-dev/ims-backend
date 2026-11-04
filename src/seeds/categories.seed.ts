@@ -73,3 +73,4 @@ export async function seedCategories(
 if (require.main === module) {
   runStandaloneSeed(seedCategories, 'CategoriesSeed');
 }
+

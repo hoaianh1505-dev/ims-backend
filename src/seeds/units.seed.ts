@@ -41,3 +41,4 @@ export async function seedUnits(dataSource: DataSource, logger: Logger): Promise
 if (require.main === module) {
   runStandaloneSeed(seedUnits, 'UnitsSeed');
 }
+

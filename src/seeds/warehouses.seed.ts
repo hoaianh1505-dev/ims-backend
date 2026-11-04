@@ -165,3 +165,4 @@ export async function seedWarehouses(
 if (require.main === module) {
   runStandaloneSeed(seedWarehouses, 'WarehousesSeed');
 }
+

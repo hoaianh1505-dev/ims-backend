@@ -102,3 +102,4 @@ export async function seedUsers(dataSource: DataSource, logger: Logger): Promise
 if (require.main === module) {
   runStandaloneSeed(seedUsers, 'UsersSeed');
 }
+

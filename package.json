@@ -22,9 +22,18 @@
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:generate": "typeorm-ts-node-commonjs -d src/data-source.ts migration:generate",
     "migration:run": "typeorm-ts-node-commonjs -d src/data-source.ts migration:run",
-    "seed:admin": "ts-node src/seeds/admin.seed.ts",
-    "seed:mock": "ts-node src/seeds/mock-data.seed.ts",
-    "seed": "ts-node src/seeds/mock-data.seed.ts"
+    "seed": "ts-node src/seeds/all.seed.ts",
+    "seed:all": "ts-node src/seeds/all.seed.ts",
+    "seed:users": "ts-node src/seeds/users.seed.ts",
+    "seed:units": "ts-node src/seeds/units.seed.ts",
+    "seed:categories": "ts-node src/seeds/categories.seed.ts",
+    "seed:suppliers": "ts-node src/seeds/suppliers.seed.ts",
+    "seed:warehouses": "ts-node src/seeds/warehouses.seed.ts",
+    "seed:products": "ts-node src/seeds/products.seed.ts",
+    "seed:inventory": "ts-node src/seeds/inventory.seed.ts",
+    "seed:transactions": "ts-node src/seeds/stock-transactions.seed.ts",
+    "seed:admin": "ts-node src/seeds/users.seed.ts",
+    "seed:mock": "ts-node src/seeds/all.seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1154.0",

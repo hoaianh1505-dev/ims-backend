@@ -55,9 +55,7 @@ export class DashboardService {
   }
 
   async getStats(query: DashboardQueryDto) {
-    const totalProducts = await this.productRepo.count({
-      where: { deleted_at: undefined },
-    });
+    const totalProducts = await this.productRepo.count();
 
     const totalWarehouses = await this.warehouseRepo.count({
       where: { is_active: true },

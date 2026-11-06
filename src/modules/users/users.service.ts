@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { PasswordUtil } from '../../common/utils/password.util';
@@ -18,6 +18,10 @@ export class UsersService {
   ) { }
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
+    if (createUserDto.role === UserRole.ADMIN) {
+      throw new BadRequestException('Không được phép tạo tài khoản có quyền Admin');
+    }
+
     const existingUser = await this.userRepository.findOne({
       where: { username: createUserDto.username },
     });
@@ -121,6 +125,21 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.findOne(id);
 
+    // Không được phép hạ hoặc thay đổi vai trò của tài khoản Admin
+    if (user.role === UserRole.ADMIN && updateUserDto.role && updateUserDto.role !== UserRole.ADMIN) {
+      throw new BadRequestException('Không được phép hạ hoặc thay đổi vai trò của Quản trị viên');
+    }
+
+    // Không được phép nâng cấp tài khoản khác lên quyền Admin
+    if (user.role !== UserRole.ADMIN && updateUserDto.role === UserRole.ADMIN) {
+      throw new BadRequestException('Không được phép nâng cấp tài khoản lên quyền Admin');
+    }
+
+    // Không được phép khóa tài khoản Admin
+    if (user.role === UserRole.ADMIN && updateUserDto.is_active === false) {
+      throw new BadRequestException('Không thể khóa tài khoản Quản trị viên');
+    }
+
     if (updateUserDto.password) {
       updateUserDto.password = await PasswordUtil.hash(updateUserDto.password);
     }
@@ -131,6 +150,9 @@ export class UsersService {
 
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
+    if (user.role === UserRole.ADMIN) {
+      throw new BadRequestException('Không thể xóa tài khoản Quản trị viên (Admin)');
+    }
     await this.userRepository.softRemove(user);
   }
 

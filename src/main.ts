@@ -16,8 +16,20 @@ async function bootstrap() {
   app.use(helmet());
   app.use(cookieParser());
 
+  const clientUrl = configService.get<string>('CLIENT_URL', 'http://localhost:5173');
+
   app.enableCors({
-    origin: configService.get<string>('CLIENT_URL', '*'),
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origin === clientUrl ||
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

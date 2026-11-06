@@ -7,12 +7,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    private readonly mailService: MailService,
   ) { }
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
@@ -23,14 +25,30 @@ export class UsersService {
       throw new ConflictException('Username already exists');
     }
 
-    const hashedPassword = await PasswordUtil.hash(createUserDto.password);
+    const rawPassword = createUserDto.password;
+    const hashedPassword = await PasswordUtil.hash(rawPassword);
 
     const newUser = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
     });
 
-    return await this.userRepository.save(newUser);
+    const savedUser = await this.userRepository.save(newUser);
+
+    // Gửi email thông báo tài khoản & mật khẩu cho nhân viên nếu có email
+    if (savedUser.email) {
+      this.mailService
+        .sendUserCredentials({
+          to: savedUser.email,
+          username: savedUser.username,
+          password: rawPassword,
+          displayName: savedUser.display_name,
+          role: savedUser.role,
+        })
+        .catch(() => {});
+    }
+
+    return savedUser;
   }
 
   async findAll(query: FilterUserDto) {
@@ -145,6 +163,17 @@ export class UsersService {
     user.password = hashedPassword;
     user.must_change_password = true;
     await this.userRepository.save(user);
+
+    if (user.email) {
+      this.mailService
+        .sendPasswordReset({
+          to: user.email,
+          username: user.username,
+          tempPassword,
+          displayName: user.display_name,
+        })
+        .catch(() => {});
+    }
 
     return {
       message: 'Đặt lại mật khẩu thành công',

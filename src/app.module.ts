@@ -25,6 +25,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AssistantModule } from './modules/assistant/assistant.module';
 import { AppController } from './app.controller';
 import { UploadModule } from './modules/upload/upload.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { UploadModule } from './modules/upload/upload.module';
     ExcelModule,
     DashboardModule,
     AssistantModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

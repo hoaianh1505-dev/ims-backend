@@ -36,7 +36,7 @@ export class StockTransactionsController {
   ) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({
     summary: 'Get stock transactions history with filters and pagination',
   })
@@ -49,7 +49,7 @@ export class StockTransactionsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({
     summary: 'Get stock transaction details by ID with items and relations',
   })

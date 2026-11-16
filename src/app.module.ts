@@ -40,17 +40,21 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DB_HOST', 'localhost'),
-        port: parseInt(config.get('DB_PORT', '5432'), 10),
-        username: config.get('DB_USERNAME') || config.get('DB_USER', 'postgres'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_DATABASE') || config.get('DB_NAME', 'ims_db'),
-        entities: [],
-        autoLoadEntities: true,
-        synchronize: config.get('NODE_ENV') !== 'production',
-      }),
+      useFactory: (config: ConfigService) => {
+        const isSsl = config.get('DB_SSL') === 'true';
+        return {
+          type: 'postgres',
+          host: config.get('DB_HOST', 'localhost'),
+          port: parseInt(config.get('DB_PORT', '5432'), 10),
+          username: config.get('DB_USERNAME') || config.get('DB_USER', 'postgres'),
+          password: config.get('DB_PASSWORD'),
+          database: config.get('DB_DATABASE') || config.get('DB_NAME', 'ims_db'),
+          entities: [],
+          autoLoadEntities: true,
+          synchronize: config.get('NODE_ENV') !== 'production' || config.get('DB_SYNC') === 'true',
+          ssl: isSsl ? { rejectUnauthorized: false } : false,
+        };
+      },
     }),
     ThrottlerModule.forRoot([
       {

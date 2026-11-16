@@ -14,6 +14,7 @@ import { ExportStockDto } from './dto/export-stock.dto';
 import { TransferStockDto } from './dto/transfer-stock.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
 import { FilterStockTransactionDto } from './dto/filter-stock-transaction.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   resolveReferenceNo,
   getWarehouseOrThrow,
@@ -31,6 +32,7 @@ export class StockTransactionsService {
     @InjectRepository(StockTransactionItemEntity)
     private readonly itemRepo: Repository<StockTransactionItemEntity>,
     private readonly dataSource: DataSource,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async importStock(dto: ImportStockDto, userId: string) {
@@ -86,7 +88,19 @@ export class StockTransactionsService {
         );
       }
 
-      return this.findOne(savedTx.id, manager);
+      const txResult = await this.findOne(savedTx.id, manager);
+
+      // Async notification trigger
+      this.notificationsService.notifyStockTransaction({
+        transactionId: txResult.id,
+        referenceNo: txResult.reference_no,
+        type: txResult.type,
+        warehouseName: warehouse.name,
+        creatorName: txResult.creator?.display_name || txResult.creator?.username || 'Nhân viên',
+        itemsCount: dto.items.length,
+      });
+
+      return txResult;
     });
   }
 
@@ -108,7 +122,7 @@ export class StockTransactionsService {
         const product = await getProductOrThrow(item.product_id, manager);
         await validateLocation(item.location_id, dto.warehouse_id, warehouse.name, manager);
 
-        await changeStock(
+        const { newQty } = await changeStock(
           dto.warehouse_id,
           item.location_id,
           item.product_id,
@@ -116,6 +130,17 @@ export class StockTransactionsService {
           product.name,
           manager,
         );
+
+        if (newQty <= product.low_stock_threshold) {
+          this.notificationsService.notifyLowStock({
+            productId: product.id,
+            productName: product.name,
+            productSku: product.sku,
+            warehouseName: warehouse.name,
+            currentQuantity: newQty,
+            threshold: product.low_stock_threshold,
+          });
+        }
 
         const unitPrice =
           item.unit_price !== undefined ? item.unit_price : product.selling_price;
@@ -132,7 +157,19 @@ export class StockTransactionsService {
         await manager.save(StockTransactionItemEntity, txItem);
       }
 
-      return this.findOne(savedTx.id, manager);
+      const txResult = await this.findOne(savedTx.id, manager);
+
+      // Async notification trigger
+      this.notificationsService.notifyStockTransaction({
+        transactionId: txResult.id,
+        referenceNo: txResult.reference_no,
+        type: txResult.type,
+        warehouseName: warehouse.name,
+        creatorName: txResult.creator?.display_name || txResult.creator?.username || 'Nhân viên',
+        itemsCount: dto.items.length,
+      });
+
+      return txResult;
     });
   }
 
@@ -181,7 +218,7 @@ export class StockTransactionsService {
           'Vị trí nhập',
         );
 
-        await changeStock(
+        const { newQty } = await changeStock(
           dto.warehouse_id,
           item.location_id,
           item.product_id,
@@ -189,6 +226,17 @@ export class StockTransactionsService {
           product.name,
           manager,
         );
+
+        if (newQty <= product.low_stock_threshold) {
+          this.notificationsService.notifyLowStock({
+            productId: product.id,
+            productName: product.name,
+            productSku: product.sku,
+            warehouseName: sourceWarehouse.name,
+            currentQuantity: newQty,
+            threshold: product.low_stock_threshold,
+          });
+        }
 
         await changeStock(
           dto.target_warehouse_id,
@@ -214,7 +262,19 @@ export class StockTransactionsService {
         await manager.save(StockTransactionItemEntity, txItem);
       }
 
-      return this.findOne(savedTx.id, manager);
+      const txResult = await this.findOne(savedTx.id, manager);
+
+      // Async notification trigger
+      this.notificationsService.notifyStockTransaction({
+        transactionId: txResult.id,
+        referenceNo: txResult.reference_no,
+        type: txResult.type,
+        warehouseName: `${sourceWarehouse.name} ➔ ${targetWarehouse.name}`,
+        creatorName: txResult.creator?.display_name || txResult.creator?.username || 'Nhân viên',
+        itemsCount: dto.items.length,
+      });
+
+      return txResult;
     });
   }
 
@@ -244,6 +304,17 @@ export class StockTransactionsService {
           manager,
         );
 
+        if (item.counted_quantity <= product.low_stock_threshold) {
+          this.notificationsService.notifyLowStock({
+            productId: product.id,
+            productName: product.name,
+            productSku: product.sku,
+            warehouseName: warehouse.name,
+            currentQuantity: item.counted_quantity,
+            threshold: product.low_stock_threshold,
+          });
+        }
+
         const unitPrice = product.cost_price;
         const totalPrice = Math.abs(diffQuantity) * unitPrice;
 
@@ -259,7 +330,19 @@ export class StockTransactionsService {
         await manager.save(StockTransactionItemEntity, txItem);
       }
 
-      return this.findOne(savedTx.id, manager);
+      const txResult = await this.findOne(savedTx.id, manager);
+
+      // Async notification trigger
+      this.notificationsService.notifyStockTransaction({
+        transactionId: txResult.id,
+        referenceNo: txResult.reference_no,
+        type: txResult.type,
+        warehouseName: warehouse.name,
+        creatorName: txResult.creator?.display_name || txResult.creator?.username || 'Nhân viên',
+        itemsCount: dto.items.length,
+      });
+
+      return txResult;
     });
   }
 

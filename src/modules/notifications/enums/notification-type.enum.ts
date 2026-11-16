@@ -1,0 +1,7 @@
+export enum NotificationType {
+  LOW_STOCK = 'LOW_STOCK',
+  OUT_OF_STOCK = 'OUT_OF_STOCK',
+  STOCK_TRANSACTION = 'STOCK_TRANSACTION',
+  SYSTEM = 'SYSTEM',
+}
+

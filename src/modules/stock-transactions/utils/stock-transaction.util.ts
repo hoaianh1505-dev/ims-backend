@@ -87,7 +87,7 @@ export async function changeStock(
   delta: number,
   productName: string,
   manager: EntityManager,
-): Promise<void> {
+): Promise<{ newQty: number }> {
   const locId = locationId || null;
   let inv = await manager.findOne(InventoryEntity, {
     where: {
@@ -118,6 +118,8 @@ export async function changeStock(
     });
     await manager.save(InventoryEntity, inv);
   }
+
+  return { newQty };
 }
 
 export async function setStock(

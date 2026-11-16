@@ -9,6 +9,7 @@ import { WarehouseLocationEntity } from '../warehouses/entities/warehouse-locati
 import { ProductEntity } from '../products/entities/product.entity';
 import { SupplierEntity } from '../suppliers/entities/supplier.entity';
 import { InventoryEntity } from '../inventory/entities/inventory.entity';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { InventoryEntity } from '../inventory/entities/inventory.entity';
       SupplierEntity,
       InventoryEntity,
     ]),
+    NotificationsModule,
   ],
   controllers: [StockTransactionsController],
   providers: [StockTransactionsService],

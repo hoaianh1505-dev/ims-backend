@@ -112,3 +112,4 @@ export class StocktakingController {
     return this.stocktakingService.delete(id);
   }
 }
+

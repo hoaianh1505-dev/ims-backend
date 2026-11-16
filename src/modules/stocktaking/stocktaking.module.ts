@@ -27,3 +27,4 @@ import { NotificationsModule } from '../notifications/notifications.module';
   exports: [StocktakingService],
 })
 export class StocktakingModule {}
+

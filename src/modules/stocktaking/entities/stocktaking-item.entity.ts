@@ -73,3 +73,4 @@ export class StocktakingItemEntity {
   @Column({ type: 'text', nullable: true })
   note: string | null;
 }
+

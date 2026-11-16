@@ -92,3 +92,4 @@ export class StocktakingSessionEntity extends BaseEntity {
   })
   items: StocktakingItemEntity[];
 }
+

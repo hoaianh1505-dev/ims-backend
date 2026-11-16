@@ -3,3 +3,4 @@ export enum StocktakingStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
+

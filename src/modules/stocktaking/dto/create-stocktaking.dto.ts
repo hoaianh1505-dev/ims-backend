@@ -31,3 +31,4 @@ export class CreateStocktakingDto {
   @IsUUID('4', { each: true, message: 'ID sản phẩm không hợp lệ' })
   product_ids?: string[];
 }
+

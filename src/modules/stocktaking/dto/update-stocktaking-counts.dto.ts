@@ -33,3 +33,4 @@ export class UpdateStocktakingCountsDto {
   @Type(() => StocktakingCountItemDto)
   items: StocktakingCountItemDto[];
 }
+

@@ -43,3 +43,4 @@ export class FilterStocktakingDto {
   @IsString({ message: 'Từ khóa tìm kiếm phải là chuỗi' })
   search?: string;
 }
+

@@ -347,3 +347,4 @@ export class StocktakingService {
     await this.sessionRepo.remove(session);
   }
 }
+

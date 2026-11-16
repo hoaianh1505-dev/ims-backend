@@ -62,3 +62,4 @@ export class CustomerEntity extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   note: string | null;
 }
+

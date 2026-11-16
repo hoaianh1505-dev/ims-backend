@@ -12,3 +12,4 @@ import { StockTransactionEntity } from '../stock-transactions/entities/stock-tra
   exports: [CustomersService],
 })
 export class CustomersModule {}
+

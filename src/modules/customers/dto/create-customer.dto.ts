@@ -60,3 +60,4 @@ export class CreateCustomerDto {
   @IsString({ message: 'Ghi chú phải là chuỗi' })
   note?: string;
 }
+

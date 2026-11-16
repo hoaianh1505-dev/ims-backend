@@ -59,3 +59,4 @@ export class UpdateCustomerDto {
   @IsString({ message: 'Ghi chú phải là chuỗi' })
   note?: string;
 }
+

@@ -39,3 +39,4 @@ export class FilterCustomerDto {
   @IsString({ message: 'Từ khóa tìm kiếm phải là chuỗi' })
   search?: string;
 }
+

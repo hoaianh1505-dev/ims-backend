@@ -6,3 +6,4 @@ export enum PurchaseOrderStatus {
   RECEIVED = 'RECEIVED',
   CANCELLED = 'CANCELLED',
 }
+

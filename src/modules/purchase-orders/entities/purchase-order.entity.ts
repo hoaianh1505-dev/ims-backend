@@ -92,3 +92,4 @@ export class PurchaseOrderEntity extends BaseEntity {
   })
   items: PurchaseOrderItemEntity[];
 }
+

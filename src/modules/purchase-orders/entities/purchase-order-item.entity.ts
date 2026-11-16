@@ -59,3 +59,4 @@ export class PurchaseOrderItemEntity {
   @Column({ type: 'text', nullable: true })
   note: string | null;
 }
+

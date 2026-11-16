@@ -9,3 +9,4 @@ export class ReceivePurchaseOrderDto {
   @IsString({ message: 'Ghi chú nhận hàng phải là chuỗi' })
   note?: string;
 }
+

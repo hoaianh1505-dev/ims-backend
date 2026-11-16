@@ -47,3 +47,4 @@ export class FilterPurchaseOrderDto {
   @IsString({ message: 'Từ khóa tìm kiếm phải là chuỗi' })
   search?: string;
 }
+

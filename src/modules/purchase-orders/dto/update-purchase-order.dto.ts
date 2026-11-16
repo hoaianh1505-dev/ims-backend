@@ -40,3 +40,4 @@ export class UpdatePurchaseOrderDto {
   @Type(() => PurchaseOrderItemDto)
   items?: PurchaseOrderItemDto[];
 }
+

@@ -1,8 +1,9 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 
 @Injectable()
@@ -44,16 +45,48 @@ export class UploadService {
 
     await this.s3Client.send(command);
 
-    const url = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
+    const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const url = `${baseUrl}/upload/file?key=${encodeURIComponent(key)}`;
     return { url, key };
+  }
+
+  async getFileStream(key: string): Promise<{ body: any; contentType: string; contentLength?: number }> {
+    if (!key) {
+      throw new BadRequestException('Vui lòng chỉ định key của file');
+    }
+
+    // Normalization: nếu key chứa URL S3 thì bóc tách lấy phần key
+    const normalizedKey = key.includes('.amazonaws.com/')
+      ? key.split('.amazonaws.com/')[1]
+      : key;
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: normalizedKey,
+      });
+
+      const response = await this.s3Client.send(command);
+      return {
+        body: response.Body,
+        contentType: response.ContentType || 'application/octet-stream',
+        contentLength: response.ContentLength,
+      };
+    } catch (err: any) {
+      throw new NotFoundException('Không tìm thấy file trên lưu trữ đám mây');
+    }
   }
 
   async deleteFile(key: string): Promise<void> {
     if (!key) return;
 
+    const normalizedKey = key.includes('.amazonaws.com/')
+      ? key.split('.amazonaws.com/')[1]
+      : key;
+
     const command = new DeleteObjectCommand({
       Bucket: this.bucket,
-      Key: key,
+      Key: normalizedKey,
     });
 
     await this.s3Client.send(command);

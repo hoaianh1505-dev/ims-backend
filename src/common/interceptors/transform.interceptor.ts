@@ -24,10 +24,11 @@ export class TransformInterceptor<T>
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
-    // Bypass transform interceptor cho kết nối SSE (Server-Sent Events)
+    // Bypass transform interceptor cho kết nối SSE (Server-Sent Events) và stream file upload
     if (
       request.headers?.accept?.includes('text/event-stream') ||
-      request.url?.includes('/notifications/stream')
+      request.url?.includes('/notifications/stream') ||
+      request.url?.includes('/upload/file')
     ) {
       return next.handle();
     }

@@ -8,6 +8,7 @@ import { FilterUserDto } from './dto/filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from '../mail/mail.service';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,7 @@ export class UsersService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly mailService: MailService,
+    private readonly uploadService: UploadService,
   ) { }
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
@@ -203,5 +205,17 @@ export class UsersService {
       username: user.username,
       temp_password: tempPassword,
     };
+  }
+
+  async uploadAvatar(id: string, file: Express.Multer.File): Promise<UserEntity> {
+    const user = await this.findOne(id);
+
+    if (!file || !file.mimetype || !file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Chỉ cho phép upload file định dạng hình ảnh (jpg, png, webp,...)');
+    }
+
+    const { url } = await this.uploadService.uploadFile(file, 'avatars');
+    user.avatar = url;
+    return await this.userRepository.save(user);
   }
 }

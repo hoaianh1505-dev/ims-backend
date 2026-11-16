@@ -9,8 +9,12 @@ import {
   ParseUUIDPipe,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ForbiddenException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -19,6 +23,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from './entities/user.entity';
 
 @ApiTags('Users')
@@ -81,5 +86,35 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete user' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Post(':id/avatar')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'File ảnh avatar (jpg, png, webp)',
+        },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiOperation({ summary: 'Upload ảnh đại diện avatar cho người dùng' })
+  @ApiResponse({ status: 200, description: 'Cập nhật avatar thành công' })
+  uploadAvatar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() currentUser: any,
+  ) {
+    if (currentUser?.role !== UserRole.ADMIN && currentUser?.id !== id) {
+      throw new ForbiddenException('Bạn chỉ có thể cập nhật ảnh đại diện của chính mình');
+    }
+    return this.usersService.uploadAvatar(id, file);
   }
 }

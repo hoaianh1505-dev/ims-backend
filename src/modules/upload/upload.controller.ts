@@ -17,9 +17,12 @@ export class UploadController {
     const stream = await this.uploadService.getFileStream(key);
     res.setHeader('Content-Type', stream.contentType);
     res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     if (stream.contentLength) {
       res.setHeader('Content-Length', stream.contentLength);
     }
     stream.body.pipe(res);
   }
 }
+

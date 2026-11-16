@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, MessageEvent } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Subject, Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { NotificationEntity } from './entities/notification.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { FilterNotificationDto } from './dto/filter-notification.dto';
@@ -10,11 +12,28 @@ import { NotificationSeverity } from './enums/notification-severity.enum';
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
+  private readonly notificationSubject = new Subject<{
+    userId?: string | null;
+    notification: NotificationEntity;
+  }>();
 
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
   ) {}
+
+  getStream(userId: string): Observable<MessageEvent> {
+    return this.notificationSubject.asObservable().pipe(
+      filter((event) => !event.userId || event.userId === userId),
+      map(
+        (event) =>
+          ({
+            data: event.notification,
+            type: 'notification',
+          }) as MessageEvent,
+      ),
+    );
+  }
 
   async create(dto: CreateNotificationDto): Promise<NotificationEntity> {
     const notification = this.notificationRepo.create({
@@ -27,7 +46,19 @@ export class NotificationsService {
       reference_type: dto.reference_type || null,
       is_read: false,
     });
-    return await this.notificationRepo.save(notification);
+    const saved = await this.notificationRepo.save(notification);
+
+    // Bắn realtime qua SSE stream
+    try {
+      this.notificationSubject.next({
+        userId: saved.user_id,
+        notification: saved,
+      });
+    } catch (err) {
+      this.logger.error('Không thể emit realtime event qua SSE:', err);
+    }
+
+    return saved;
   }
 
   async findAll(userId: string, query: FilterNotificationDto) {

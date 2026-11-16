@@ -22,6 +22,15 @@ export class TransformInterceptor<T>
   ): Observable<Response<T>> {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse();
+    const request = ctx.getRequest();
+
+    // Bypass transform interceptor cho kết nối SSE (Server-Sent Events)
+    if (
+      request.headers?.accept?.includes('text/event-stream') ||
+      request.url?.includes('/notifications/stream')
+    ) {
+      return next.handle();
+    }
 
     return next.handle().pipe(
       map((result) => {

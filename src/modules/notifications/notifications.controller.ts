@@ -7,7 +7,10 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import {
   ApiTags,
   ApiOperation,
@@ -25,6 +28,18 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
+
+  @Sse('stream')
+  @ApiOperation({
+    summary: 'Kênh truyền sự kiện thời gian thực Server-Sent Events (SSE) để bắn thông báo ngay lập tức',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Luồng dữ liệu sự kiện thời gian thực (text/event-stream)',
+  })
+  stream(@CurrentUser('id') userId: string): Observable<MessageEvent> {
+    return this.notificationsService.getStream(userId);
+  }
 
   @Get()
   @ApiOperation({

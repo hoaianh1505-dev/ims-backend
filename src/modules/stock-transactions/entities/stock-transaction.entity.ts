@@ -10,6 +10,7 @@ import {
 import { StockTransactionType } from '../enums/stock-transaction-type.enum';
 import { WarehouseEntity } from '../../warehouses/entities/warehouse.entity';
 import { SupplierEntity } from '../../suppliers/entities/supplier.entity';
+import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { UserEntity } from '../../users/entities/user.entity';
 import { StockTransactionItemEntity } from './stock-transaction-item.entity';
 
@@ -47,6 +48,13 @@ export class StockTransactionEntity {
   @ManyToOne(() => SupplierEntity, { nullable: true })
   @JoinColumn({ name: 'supplier_id' })
   supplier: SupplierEntity | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  customer_id: string | null;
+
+  @ManyToOne(() => CustomerEntity, { nullable: true })
+  @JoinColumn({ name: 'customer_id' })
+  customer: CustomerEntity | null;
 
   @Column({ type: 'uuid' })
   created_by_user_id: string;

@@ -8,6 +8,7 @@ import { WarehouseEntity } from '../warehouses/entities/warehouse.entity';
 import { WarehouseLocationEntity } from '../warehouses/entities/warehouse-location.entity';
 import { ProductEntity } from '../products/entities/product.entity';
 import { SupplierEntity } from '../suppliers/entities/supplier.entity';
+import { CustomerEntity } from '../customers/entities/customer.entity';
 import { InventoryEntity } from '../inventory/entities/inventory.entity';
 import { NotificationsModule } from '../notifications/notifications.module';
 
@@ -20,6 +21,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
       WarehouseLocationEntity,
       ProductEntity,
       SupplierEntity,
+      CustomerEntity,
       InventoryEntity,
     ]),
     NotificationsModule,

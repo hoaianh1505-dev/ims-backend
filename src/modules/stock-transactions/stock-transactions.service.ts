@@ -9,6 +9,7 @@ import { StockTransactionEntity } from './entities/stock-transaction.entity';
 import { StockTransactionItemEntity } from './entities/stock-transaction-item.entity';
 import { StockTransactionType } from './enums/stock-transaction-type.enum';
 import { SupplierEntity } from '../suppliers/entities/supplier.entity';
+import { CustomerEntity } from '../customers/entities/customer.entity';
 import { ImportStockDto } from './dto/import-stock.dto';
 import { ExportStockDto } from './dto/export-stock.dto';
 import { TransferStockDto } from './dto/transfer-stock.dto';
@@ -107,12 +108,23 @@ export class StockTransactionsService {
   async exportStock(dto: ExportStockDto, userId: string) {
     return this.dataSource.transaction(async (manager) => {
       const warehouse = await getWarehouseOrThrow(dto.warehouse_id, manager);
+
+      if (dto.customer_id) {
+        const customer = await manager.findOne(CustomerEntity, {
+          where: { id: dto.customer_id },
+        });
+        if (!customer) {
+          throw new NotFoundException('Khách hàng không tồn tại');
+        }
+      }
+
       const referenceNo = await resolveReferenceNo('EXP', dto.reference_no, manager);
 
       const transaction = manager.create(StockTransactionEntity, {
         type: StockTransactionType.EXPORT,
         reference_no: referenceNo,
         warehouse_id: dto.warehouse_id,
+        customer_id: dto.customer_id || null,
         created_by_user_id: userId,
         note: dto.note || null,
       });
@@ -355,6 +367,7 @@ export class StockTransactionsService {
       .leftJoinAndSelect('tx.warehouse', 'warehouse')
       .leftJoinAndSelect('tx.target_warehouse', 'target_warehouse')
       .leftJoinAndSelect('tx.supplier', 'supplier')
+      .leftJoinAndSelect('tx.customer', 'customer')
       .leftJoinAndSelect('tx.creator', 'creator')
       .leftJoinAndSelect('tx.items', 'items')
       .leftJoinAndSelect('items.product', 'product')
@@ -418,6 +431,7 @@ export class StockTransactionsService {
       .leftJoinAndSelect('tx.warehouse', 'warehouse')
       .leftJoinAndSelect('tx.target_warehouse', 'target_warehouse')
       .leftJoinAndSelect('tx.supplier', 'supplier')
+      .leftJoinAndSelect('tx.customer', 'customer')
       .leftJoinAndSelect('tx.creator', 'creator')
       .leftJoinAndSelect('tx.items', 'items')
       .leftJoinAndSelect('items.product', 'product')

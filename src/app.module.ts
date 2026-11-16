@@ -15,6 +15,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UnitsModule } from './modules/units/units.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { CustomersModule } from './modules/customers/customers.module';
 import { ProductsModule } from './modules/products/products.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
@@ -60,6 +61,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     CategoriesModule,
     UnitsModule,
     SuppliersModule,
+    CustomersModule,
     ProductsModule,
     UploadModule,
     WarehousesModule,

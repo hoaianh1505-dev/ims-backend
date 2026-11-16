@@ -36,6 +36,10 @@ export class ExportStockDto {
   warehouse_id: string;
 
   @IsOptional()
+  @IsUUID('4', { message: 'customer_id phải là UUID hợp lệ' })
+  customer_id?: string;
+
+  @IsOptional()
   @IsString({ message: 'Mã phiếu phải là chuỗi ký tự' })
   reference_no?: string;
 

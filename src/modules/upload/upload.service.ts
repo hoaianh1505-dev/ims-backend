@@ -45,7 +45,7 @@ export class UploadService {
 
     await this.s3Client.send(command);
 
-    const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 5000}`;
     const url = `${baseUrl}/upload/file?key=${encodeURIComponent(key)}`;
     return { url, key };
   }

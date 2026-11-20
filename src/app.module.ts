@@ -10,6 +10,7 @@ import jwtConfig from './config/jwt.config';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { DatabaseBootstrapService } from './common/services/database-bootstrap.service';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
@@ -85,6 +86,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
   controllers: [AppController],
   providers: [
     AppService,
+    DatabaseBootstrapService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

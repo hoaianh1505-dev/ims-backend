@@ -27,6 +27,7 @@ async function bootstrap() {
       if (
         !origin ||
         origin === clientUrl ||
+        origin.endsWith('.vercel.app') ||
         /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
       ) {
         callback(null, true);
@@ -34,7 +35,7 @@ async function bootstrap() {
         callback(null, false);
       }
     },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 

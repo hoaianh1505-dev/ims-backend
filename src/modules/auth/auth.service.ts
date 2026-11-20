@@ -21,18 +21,18 @@ export class AuthService {
     // Find user by username
     const user = await this.usersService.findByUsername(username);
     if (!user) {
-      throw new UnauthorizedException('Tài khoản không tồn tại trong hệ thống');
+      throw new UnauthorizedException('Tài khoản hoặc mật khẩu không chính xác');
     }
 
     // Check if user is active
     if (!user.is_active) {
-      throw new UnauthorizedException('Tài khoản này đã bị khóa hoặc ngừng hoạt động. Vui lòng liên hệ Quản trị viên!');
+      throw new UnauthorizedException('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên!');
     }
 
     // Compare password
     const isPasswordValid = await PasswordUtil.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Mật khẩu không chính xác. Vui lòng kiểm tra lại!');
+      throw new UnauthorizedException('Tài khoản hoặc mật khẩu không chính xác');
     }
 
     const accessToken = this.generateToken({

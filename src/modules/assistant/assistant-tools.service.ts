@@ -227,6 +227,101 @@ export class AssistantToolsService {
     }
   }
 
+  async getTopInventoryProducts(args: {
+    limit?: number;
+    sort_by?: 'quantity' | 'value';
+  }) {
+    try {
+      const limit = args.limit ? Math.min(args.limit, 20) : 10;
+      const qb = this.inventoryRepo
+        .createQueryBuilder('inv')
+        .innerJoin('inv.product', 'p')
+        .leftJoin('p.category', 'c')
+        .leftJoin('p.unit', 'u')
+        .select('p.id', 'product_id')
+        .addSelect('p.sku', 'sku')
+        .addSelect('p.name', 'product_name')
+        .addSelect('c.name', 'category_name')
+        .addSelect('u.name', 'unit_name')
+        .addSelect('p.selling_price', 'selling_price')
+        .addSelect('SUM(inv.quantity)', 'total_quantity')
+        .addSelect('SUM(inv.quantity * p.selling_price)', 'total_value')
+        .where('p.deleted_at IS NULL')
+        .groupBy('p.id')
+        .addGroupBy('p.sku')
+        .addGroupBy('p.name')
+        .addGroupBy('c.name')
+        .addGroupBy('u.name')
+        .addGroupBy('p.selling_price');
+
+      if (args.sort_by === 'value') {
+        qb.orderBy('SUM(inv.quantity * p.selling_price)', 'DESC');
+      } else {
+        qb.orderBy('SUM(inv.quantity)', 'DESC');
+      }
+
+      const raw = await qb.limit(limit).getRawMany();
+      return raw.map((r) => ({
+        product_id: r.product_id,
+        sku: r.sku,
+        name: r.product_name,
+        category: r.category_name || 'Khác',
+        unit: r.unit_name || 'Cái',
+        total_quantity: Number(r.total_quantity) || 0,
+        selling_price: Number(r.selling_price) || 0,
+        total_value: Number(r.total_value) || 0,
+      }));
+    } catch (error) {
+      this.logger.error('Lỗi khi lấy top sản phẩm tồn kho cho AI:', error);
+      return { error: 'Không thể lấy danh sách sản phẩm tồn kho nhiều nhất' };
+    }
+  }
+
+  async getInventoryOverviewStats() {
+    try {
+      const totalInvRaw = await this.inventoryRepo
+        .createQueryBuilder('inv')
+        .innerJoin('inv.product', 'p')
+        .select('SUM(inv.quantity)', 'total_quantity')
+        .addSelect('SUM(inv.quantity * p.selling_price)', 'total_value')
+        .where('p.deleted_at IS NULL')
+        .getRawOne();
+
+      const productCount = await this.productRepo.count({
+        where: { deleted_at: null } as any,
+      });
+      const warehouseCount = await this.warehouseRepo.count({
+        where: { is_active: true },
+      });
+
+      const topCategories = await this.inventoryRepo
+        .createQueryBuilder('inv')
+        .innerJoin('inv.product', 'p')
+        .leftJoin('p.category', 'c')
+        .select("COALESCE(c.name, 'Chưa phân loại')", 'category_name')
+        .addSelect('SUM(inv.quantity)', 'quantity')
+        .where('p.deleted_at IS NULL')
+        .groupBy('c.name')
+        .orderBy('SUM(inv.quantity)', 'DESC')
+        .limit(5)
+        .getRawMany();
+
+      return {
+        total_inventory_quantity: Number(totalInvRaw?.total_quantity) || 0,
+        total_inventory_value: Number(totalInvRaw?.total_value) || 0,
+        total_products: productCount,
+        total_warehouses: warehouseCount,
+        top_categories_by_quantity: topCategories.map((c) => ({
+          category: c.category_name,
+          quantity: Number(c.quantity) || 0,
+        })),
+      };
+    } catch (error) {
+      this.logger.error('Lỗi khi lấy tổng quan kho cho AI:', error);
+      return { error: 'Không thể lấy tổng quan kho hàng' };
+    }
+  }
+
   async executeTool(name: string, args: Record<string, any>, user?: any) {
     switch (name) {
       case 'search_products':
@@ -244,6 +339,12 @@ export class AssistantToolsService {
         return await this.getRecentStockTransactions(
           args as { limit?: number; type?: StockTransactionType },
         );
+      case 'get_top_inventory_products':
+        return await this.getTopInventoryProducts(
+          args as { limit?: number; sort_by?: 'quantity' | 'value' },
+        );
+      case 'get_inventory_overview_stats':
+        return await this.getInventoryOverviewStats();
       default:
         return { error: `Công cụ ${name} không tồn tại` };
     }

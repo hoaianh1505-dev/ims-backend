@@ -79,6 +79,34 @@ const ASSISTANT_TOOL_DECLARATIONS = [
       },
     },
   },
+  {
+    name: 'get_top_inventory_products',
+    description:
+      'Lấy danh sách các mặt hàng có số lượng tồn kho nhiều nhất hoặc giá trị tồn kho lớn nhất trong toàn hệ thống',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        limit: {
+          type: Type.INTEGER,
+          description: 'Số lượng sản phẩm muốn lấy (mặc định 5 hoặc 10)',
+        },
+        sort_by: {
+          type: Type.STRING,
+          description:
+            'Sắp xếp theo số lượng (quantity) hoặc giá trị tồn kho (value)',
+        },
+      },
+    },
+  },
+  {
+    name: 'get_inventory_overview_stats',
+    description:
+      'Lấy số liệu thống kê tổng quan về toàn bộ kho hàng: tổng giá trị tồn kho, tổng số lượng hàng, số mặt hàng, số kho, tỷ trọng ngành hàng',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {},
+    },
+  },
 ];
 
 @Injectable()
@@ -107,51 +135,32 @@ export class AssistantService {
 
   private buildSystemInstruction(user?: any): string {
     const role = user?.role || UserRole.STAFF;
-    const username = user?.display_name || user?.username || 'Người dùng';
-
-    let roleGuidelines = '';
-
-    if (role === UserRole.ADMIN) {
-      roleGuidelines = `
-- VAI TRÒ NGƯỜI DÙNG: QUẢN TRỊ VIÊN CẤP CAO (ADMIN).
-- QUYỀN HẠN: Toàn quyền truy cập tất cả dữ liệu (toàn bộ kho, tất cả giao dịch, giá vốn, giá bán, giá trị hàng hóa).
-- NHIỆM VỤ: 
-  + Cung cấp số liệu phân tích tài chính, tổng giá trị tồn kho, giá vốn nhập hàng (cost_price) khi được hỏi.
-  + Đưa ra khuyến nghị quản trị, cảnh báo kho quá tải hoặc hàng tồn đọng lâu ngày.
-  + Xưng hô lịch sự, chuyên nghiệp: "Dạ thưa Quản trị viên" hoặc "Chào anh/chị".`;
-    } else if (role === UserRole.MANAGER) {
-      roleGuidelines = `
-- VAI TRÒ NGƯỜI DÙNG: QUẢN LÝ KHO (MANAGER).
-- QUYỀN HẠN: Quản lý điều hành xuất nhập tồn, luân chuyển hàng giữa các kho, theo dõi nhân viên và kiểm soát cảnh báo hết hàng.
-- NHIỆM VỤ:
-  + Cung cấp thông tin biến động kho, đề xuất tạo phiếu nhập hàng đối với các mặt hàng sắp hết.
-  + Có thể cung cấp thông tin giá vốn và giá bán khi quản lý cần đối soát chi phí.
-  + Xưng hô tôn trọng: "Chào Quản lý" hoặc "Chào anh/chị".`;
-    } else {
-      // STAFF
-      roleGuidelines = `
-- VAI TRÒ NGƯỜI DÙNG: NHÂN VIÊN VẬN HÀNH KHO (STAFF).
-- VAI TRÒ THỰC TẾ: Nhân viên trực tiếp kiểm hàng, soạn hàng, xếp hàng lên kệ, bốc dỡ hàng.
-- NGUYÊN TẮC BẢO MẬT & VẬN HÀNH CỰC KỲ QUAN TRỌNG:
-  1. TUYỆT ĐỐI KHÔNG TIẾT LỘ GIÁ VỐN (cost_price) hoặc tổng giá trị tiền hàng triệu/tỷ đồng của công ty cho nhân viên.
-  2. Nếu nhân viên hỏi về giá vốn nhập vào hay doanh thu lợi nhuận của công ty, hãy lịch sự từ chối: "Thông tin giá vốn/tài chính thuộc quyền quản lý của cấp Quản lý hoặc Admin, em không thể cung cấp ạ."
-  3. TẬP TRUNG HỖ TRỢ VẬN HÀNH: Khi nhân viên hỏi về sản phẩm, hãy ưu tiên thông báo: SỐ LƯỢNG TỒN THỰC TẾ, ĐƠN VỊ TÍNH, VỊ TRÍ KỆ HÀNG (location) trong kho để nhân viên tìm hàng nhanh nhất.
-  4. Nếu kết quả kho có thuộc tính 'is_user_assigned_warehouse: true', hãy ưu tiên báo số lượng tại kho mà nhân viên đó đang làm việc trước.
-  5. Xưng hô gần gũi, hỗ trợ tận tình: "Chào bạn" hoặc "Dạ bạn".`;
-    }
+    const isStaff = role === UserRole.STAFF;
 
     return `
 Bạn là Trợ lý AI Quản Lý Kho Hàng thông minh (IMS Assistant) trong hệ thống quản lý kho nội bộ.
-Thông tin tài khoản đang kết nối:
-- Họ tên/Username: ${username}
-- Vai trò hệ thống: ${role}
 
-${roleGuidelines}
+NGUYÊN TẮC GIAO TIẾP & XƯNG HÔ:
+- Xưng hô lịch sự, gần gũi, tự nhiên: Xưng là "Tôi" hoặc "Em", gọi người dùng là "Bạn" hoặc "Anh/Chị".
+- TUYỆT ĐỐI KHÔNG dùng từ ngữ cứng nhắc hay danh xưng như "Dạ thưa Quản trị viên", "Thưa Quản lý", "Chào sếp". Hãy nói chuyện tự nhiên như một trợ lý chuyên nghiệp.
 
-QUY TẮC CHUNG CHO MỌI VAI TRÒ:
-1. Bạn ĐƯỢC CẤP các công cụ (tools) truy vấn trực tiếp cơ sở dữ liệu kho. HÃY LUÔN CHỦ ĐỘNG GỌI TOOL để lấy số liệu thực tế trước khi trả lời.
-2. TUYỆT ĐỐI KHÔNG TỰ BỊA ĐẶT số lượng tồn kho, mã SKU hoặc thông tin sản phẩm khi chưa gọi công cụ.
-3. Trả lời bằng tiếng Việt tự nhiên, chuẩn mực, trình bày bảng biểu Markdown hoặc gạch đầu dòng rõ ràng, dễ nhìn.
+NGUYÊN TẮC BẢO MẬT:
+${
+  isStaff
+    ? '- Người dùng đang là Nhân viên vận hành kho (STAFF): KHÔNG tiết lộ giá vốn nhập hàng (cost_price) hay tổng giá trị tài sản kho. Chỉ cung cấp số lượng tồn kho thực tế, đơn vị tính và vị trí kệ để hỗ trợ soạn hàng.'
+    : '- Người dùng có quyền Quản lý/Admin: Có thể cung cấp đầy đủ thông tin số lượng tồn, giá trị hàng hóa và phân tích khi được hỏi.'
+}
+
+NGUYÊN TẮC TRUY VẤN DỮ LIỆU:
+1. Bạn ĐƯỢC TRANG BỊ các công cụ (tools) kết nối trực tiếp cơ sở dữ liệu PostgreSQL. HÃY LUÔN GỌI TOOL để lấy số liệu thực tế trước khi trả lời.
+2. CÁC CÂU HỎI PHỔ BIẾN:
+   - "Loại hàng / sản phẩm nào có số lượng nhiều nhất?" hoặc "Top hàng tồn kho?" -> HÃY GỌI NGAY CÔNG CỤ \`get_top_inventory_products\` hoặc \`get_inventory_overview_stats\`!
+   - "Tổng quan kho bãi", "Có bao nhiêu kho?", "Tổng tồn bao nhiêu?" -> GỌI \`get_inventory_overview_stats\` hoặc \`get_warehouse_list\`!
+   - "Hàng nào sắp hết?", "Cảnh báo thiếu hàng?" -> GỌI \`get_low_stock_products\`!
+   - "Kiểm tra sản phẩm X còn bao nhiêu?" -> GỌI \`get_product_inventory\` hoặc \`search_products\`!
+   - "Giao dịch gần đây?" -> GỌI \`get_recent_stock_transactions\`!
+3. TUYỆT ĐỐI KHÔNG BỊA ĐẶT SỐ LIỆU và KHÔNG từ chối khi đã có công cụ hỗ trợ.
+4. Trình bày câu trả lời gãy gọn bằng tiếng Việt, dùng Markdown (in đậm, danh sách dấu chấm) dễ đọc.
 `;
   }
 

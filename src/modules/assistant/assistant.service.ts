@@ -168,7 +168,7 @@ NGUYÊN TẮC TRUY VẤN DỮ LIỆU:
     if (!this.genAI) {
       return {
         reply:
-          'Hệ thống chưa được thiết lập khóa GEMINI_API_KEY trong file môi trường (.env). Vui lòng cấu hình khóa API của Google Gemini để kích hoạt tính năng hỏi đáp thông minh với trợ lý kho hàng.',
+          'Hiện tại Trợ lý AI đang bận hoặc hệ thống đang bảo trì đường truyền. Bạn vui lòng thử lại sau giây lát nhé! 🤖',
         tool_calls: [],
       };
     }
@@ -261,7 +261,7 @@ NGUYÊN TẮC TRUY VẤN DỮ LIỆU:
 
       return {
         reply:
-          'Đã xảy ra lỗi trong quá trình kết nối với trợ lý AI. Vui lòng kiểm tra lại GEMINI_API_KEY hoặc thử lại sau giây lát.',
+          'Hiện tại Trợ lý AI đang bận hoặc hệ thống đang bảo trì đường truyền. Bạn vui lòng thử lại sau giây lát nhé! 🤖',
         tool_calls: [],
       };
     }

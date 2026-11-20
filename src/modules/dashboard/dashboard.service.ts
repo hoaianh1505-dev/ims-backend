@@ -13,6 +13,22 @@ import { StockTransactionType } from '../stock-transactions/enums/stock-transact
 
 @Injectable()
 export class DashboardService {
+  private readonly memoryCache = new Map<string, { data: any; expiresAt: number }>();
+
+  private getFromCache<T>(key: string): T | null {
+    const item = this.memoryCache.get(key);
+    if (item && Date.now() < item.expiresAt) {
+      return item.data as T;
+    }
+    this.memoryCache.delete(key);
+    return null;
+  }
+
+  private setInCache<T>(key: string, data: T, ttlMs = 20000): T {
+    this.memoryCache.set(key, { data, expiresAt: Date.now() + ttlMs });
+    return data;
+  }
+
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(ProductEntity)
@@ -55,6 +71,10 @@ export class DashboardService {
   }
 
   async getStats(query: DashboardQueryDto) {
+    const cacheKey = `stats_${query.warehouse_id || 'all'}`;
+    const cached = this.getFromCache<any>(cacheKey);
+    if (cached) return cached;
+
     const totalProducts = await this.productRepo.count();
 
     const totalWarehouses = await this.warehouseRepo.count({
@@ -140,7 +160,7 @@ export class DashboardService {
       txMonthQb.getCount(),
     ]);
 
-    return {
+    const result = {
       total_products: totalProducts,
       total_warehouses: totalWarehouses,
       total_inventory_quantity: Number(inventoryTotals?.total_quantity || 0),
@@ -150,9 +170,15 @@ export class DashboardService {
       transactions_today: transactionsToday,
       transactions_this_month: transactionsThisMonth,
     };
+
+    return this.setInCache(cacheKey, result, 15000);
   }
 
   async getStockMovement(query: DashboardQueryDto) {
+    const cacheKey = `move_${query.period || '30d'}_${query.warehouse_id || 'all'}`;
+    const cached = this.getFromCache<any>(cacheKey);
+    if (cached) return cached;
+
     const startDate = this.getStartDateFromPeriod(query.period);
 
     const qb = this.stockTransactionRepo
@@ -234,12 +260,17 @@ export class DashboardService {
       }
     }
 
-    return Array.from(dateMap.values()).sort((a, b) =>
+    const movementResult = Array.from(dateMap.values()).sort((a, b) =>
       a.date.localeCompare(b.date),
     );
+    return this.setInCache(cacheKey, movementResult, 15000);
   }
 
   async getInventoryByWarehouse() {
+    const cacheKey = 'inv_by_wh';
+    const cached = this.getFromCache<any>(cacheKey);
+    if (cached) return cached;
+
     const raw = await this.warehouseRepo
       .createQueryBuilder('w')
       .leftJoin(InventoryEntity, 'inv', 'inv.warehouse_id = w.id')
@@ -267,7 +298,7 @@ export class DashboardService {
       .orderBy('total_quantity', 'DESC')
       .getRawMany();
 
-    return raw.map((item) => ({
+    const warehouseResult = raw.map((item) => ({
       warehouse_id: item.warehouse_id,
       warehouse_code: item.warehouse_code,
       warehouse_name: item.warehouse_name,
@@ -275,9 +306,14 @@ export class DashboardService {
       total_value: Number(item.total_value),
       product_count: Number(item.product_count),
     }));
+    return this.setInCache(cacheKey, warehouseResult, 20000);
   }
 
   async getInventoryByCategory() {
+    const cacheKey = 'inv_by_cat';
+    const cached = this.getFromCache<any>(cacheKey);
+    if (cached) return cached;
+
     const raw = await this.categoryRepo
       .createQueryBuilder('c')
       .leftJoin(ProductEntity, 'p', 'p.category_id = c.id AND p.deleted_at IS NULL')
@@ -300,7 +336,7 @@ export class DashboardService {
       0,
     );
 
-    return raw.map((item) => {
+    const categoryResult = raw.map((item) => {
       const qty = Number(item.total_quantity);
       const percentage =
         grandTotal > 0 ? Math.round((qty / grandTotal) * 1000) / 10 : 0;
@@ -314,10 +350,15 @@ export class DashboardService {
         percentage,
       };
     });
+    return this.setInCache(cacheKey, categoryResult, 20000);
   }
 
   async getTopProducts(query: DashboardQueryDto) {
     const limit = query.limit || 5;
+    const cacheKey = `top_prod_${query.period || '30d'}_${query.warehouse_id || 'all'}_${limit}`;
+    const cached = this.getFromCache<any>(cacheKey);
+    if (cached) return cached;
+
     const startDate = this.getStartDateFromPeriod(query.period);
 
     const qb = this.stockTransactionRepo
@@ -350,7 +391,7 @@ export class DashboardService {
 
     const raw = await qb.getRawMany();
 
-    return raw.map((item) => ({
+    const topResult = raw.map((item) => ({
       product_id: item.product_id,
       sku: item.sku,
       name: item.name,
@@ -359,6 +400,7 @@ export class DashboardService {
       total_quantity: Number(item.total_quantity),
       total_value: Number(item.total_value),
     }));
+    return this.setInCache(cacheKey, topResult, 20000);
   }
 
   async getLowStockAlerts(query: DashboardQueryDto) {

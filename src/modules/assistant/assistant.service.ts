@@ -82,7 +82,7 @@ const ASSISTANT_TOOL_DECLARATIONS = [
   {
     name: 'get_top_inventory_products',
     description:
-      'Lấy danh sách các mặt hàng có số lượng tồn kho nhiều nhất hoặc giá trị tồn kho lớn nhất trong toàn hệ thống',
+      'Lấy danh sách các mặt hàng, sản phẩm có số lượng tồn kho nhiều nhất hoặc giá trị tồn kho lớn nhất trong toàn hệ thống. Dùng khi hỏi: mặt hàng nào nhiều nhất, sản phẩm nào tồn kho lớn nhất, top sản phẩm.',
     parameters: {
       type: Type.OBJECT,
       properties: {
@@ -96,6 +96,15 @@ const ASSISTANT_TOOL_DECLARATIONS = [
             'Sắp xếp theo số lượng (quantity) hoặc giá trị tồn kho (value)',
         },
       },
+    },
+  },
+  {
+    name: 'get_inventory_by_category',
+    description:
+      'Thống kê số lượng tồn kho theo từng loại hàng (danh mục sản phẩm, nhóm ngành hàng) trong toàn hệ thống. BẮT BUỘC DÙNG khi người dùng hỏi: loại hàng nào nhiều nhất, danh mục nào tồn kho nhiều nhất, cơ cấu ngành hàng.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {},
     },
   },
   {
@@ -143,6 +152,7 @@ Bạn là Trợ lý AI Quản Lý Kho Hàng thông minh (IMS Assistant) trong h�
 NGUYÊN TẮC GIAO TIẾP & XƯNG HÔ:
 - Xưng hô lịch sự, gần gũi, tự nhiên: Xưng là "Tôi" hoặc "Em", gọi người dùng là "Bạn" hoặc "Anh/Chị".
 - TUYỆT ĐỐI KHÔNG dùng từ ngữ cứng nhắc hay danh xưng như "Dạ thưa Quản trị viên", "Thưa Quản lý", "Chào sếp". Hãy nói chuyện tự nhiên như một trợ lý chuyên nghiệp.
+- TUYỆT ĐỐI KHÔNG từ chối người dùng bằng câu "tôi không có công cụ trực tiếp". Hệ thống đã kết nối trực tiếp database với đầy đủ công cụ.
 
 NGUYÊN TẮC BẢO MẬT:
 ${
@@ -153,8 +163,9 @@ ${
 
 NGUYÊN TẮC TRUY VẤN DỮ LIỆU:
 1. Bạn ĐƯỢC TRANG BỊ các công cụ (tools) kết nối trực tiếp cơ sở dữ liệu PostgreSQL. HÃY LUÔN GỌI TOOL để lấy số liệu thực tế trước khi trả lời.
-2. CÁC CÂU HỎI PHỔ BIẾN:
-   - "Loại hàng / sản phẩm nào có số lượng nhiều nhất?" hoặc "Top hàng tồn kho?" -> HÃY GỌI NGAY CÔNG CỤ \`get_top_inventory_products\` hoặc \`get_inventory_overview_stats\`!
+2. CÁC CÂU HỎI PHỔ BIẾN & CÔNG CỤ TƯƠNG ỨNG:
+   - "Loại hàng nào / danh mục nào có số lượng nhiều nhất?", "Cơ cấu loại hàng?" -> HÃY GỌI NGAY \`get_inventory_by_category\`! Tổng hợp danh mục đứng đầu kèm số lượng và tỷ trọng %.
+   - "Mặt hàng nào / sản phẩm nào tồn kho nhiều nhất?", "Top hàng tồn kho?" -> HÃY GỌI \`get_top_inventory_products\`!
    - "Tổng quan kho bãi", "Có bao nhiêu kho?", "Tổng tồn bao nhiêu?" -> GỌI \`get_inventory_overview_stats\` hoặc \`get_warehouse_list\`!
    - "Hàng nào sắp hết?", "Cảnh báo thiếu hàng?" -> GỌI \`get_low_stock_products\`!
    - "Kiểm tra sản phẩm X còn bao nhiêu?" -> GỌI \`get_product_inventory\` hoặc \`search_products\`!

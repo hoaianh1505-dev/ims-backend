@@ -322,6 +322,44 @@ export class AssistantToolsService {
     }
   }
 
+  async getInventoryByCategory(user?: any) {
+    try {
+      const isStaff = user?.role === UserRole.STAFF;
+      const raw = await this.inventoryRepo
+        .createQueryBuilder('inv')
+        .innerJoin('inv.product', 'p')
+        .leftJoin('p.category', 'c')
+        .select("COALESCE(c.name, 'Chưa phân loại')", 'category_name')
+        .addSelect('COUNT(DISTINCT p.id)', 'product_count')
+        .addSelect('COALESCE(SUM(inv.quantity), 0)', 'total_quantity')
+        .addSelect('COALESCE(SUM(inv.quantity * p.selling_price), 0)', 'total_value')
+        .where('p.deleted_at IS NULL')
+        .groupBy('c.name')
+        .orderBy('SUM(inv.quantity)', 'DESC')
+        .getRawMany();
+
+      const grandTotal = raw.reduce((sum, item) => sum + Number(item.total_quantity), 0);
+
+      return raw.map((item) => {
+        const row: Record<string, any> = {
+          category_name: item.category_name,
+          product_count: Number(item.product_count) || 0,
+          total_quantity: Number(item.total_quantity) || 0,
+          percentage: grandTotal > 0 ? Math.round((Number(item.total_quantity) / grandTotal) * 1000) / 10 : 0,
+        };
+
+        if (!isStaff) {
+          row.total_value = Number(item.total_value) || 0;
+        }
+
+        return row;
+      });
+    } catch (error) {
+      this.logger.error('Lỗi khi thống kê loại hàng cho AI:', error);
+      return { error: 'Không thể thống kê tồn kho theo loại hàng' };
+    }
+  }
+
   async executeTool(name: string, args: Record<string, any>, user?: any) {
     switch (name) {
       case 'search_products':
@@ -345,6 +383,8 @@ export class AssistantToolsService {
         );
       case 'get_inventory_overview_stats':
         return await this.getInventoryOverviewStats();
+      case 'get_inventory_by_category':
+        return await this.getInventoryByCategory(user);
       default:
         return { error: `Công cụ ${name} không tồn tại` };
     }

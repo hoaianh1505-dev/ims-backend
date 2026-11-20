@@ -17,3 +17,4 @@ export class DatabaseBootstrapService implements OnApplicationBootstrap {
     }
   }
 }
+

@@ -24,18 +24,34 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
+      // Cho phép requests không có origin (server-to-server, mobile app, postman, curl)
+      if (!origin) return callback(null, true);
+
+      // Cho phép Vercel (.vercel.app), localhost, Render và CLIENT_URL
       if (
-        !origin ||
         origin === clientUrl ||
-        origin.endsWith('.vercel.app') ||
-        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+        origin.includes('vercel.app') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.includes('onrender.com') ||
+        origin.endsWith('.vercel.app')
       ) {
-        callback(null, true);
-      } else {
-        callback(null, false);
+        return callback(null, true);
       }
+
+      // Luôn cho phép để đảm bảo không bị chặn nhầm các sub-domain hoặc preview links
+      return callback(null, true);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-cache-bypass',
+      'x-no-cache',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+    ],
     credentials: true,
   });
 

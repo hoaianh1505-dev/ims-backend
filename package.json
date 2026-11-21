@@ -23,6 +23,7 @@
     "migration:generate": "typeorm-ts-node-commonjs -d src/data-source.ts migration:generate",
     "migration:run": "typeorm-ts-node-commonjs -d src/data-source.ts migration:run",
     "seed": "ts-node src/seeds/all.seed.ts",
+    "seed:fresh": "ts-node src/seeds/fresh.seed.ts",
     "seed:all": "ts-node src/seeds/all.seed.ts",
     "seed:users": "ts-node src/seeds/users.seed.ts",
     "seed:units": "ts-node src/seeds/units.seed.ts",
